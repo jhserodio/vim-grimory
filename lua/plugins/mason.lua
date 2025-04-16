@@ -9,6 +9,24 @@ return {
     ensure_installed = {
       "stylua",
       "shfmt",
+      "prettier",
+      "codellbd",
+      "hadolint",
+      "goimports",
+      "gofumpt",
+      "gomodifytags",
+      "impl",
+      "delve",
+      "java-debug-adapter",
+      "java-test",
+      "ktlint",
+      "markdownlint-cli2",
+      "markdown-toc",
+      "tflint",
+      "js-debug-adapter",
+      "bacon",
+      "haskell-language-server",
+      "haskell-debug-adapter",
     },
   },
   config = function(_, opts)
@@ -22,15 +40,6 @@ return {
           buf = vim.api.nvim_get_current_buf(),
         })
       end, 100)
-    end)
-
-    mr.refresh(function()
-      for _, tool in ipairs(opts.ensure_installed) do
-        local p = mr.get_package(tool)
-        if not p:is_installed() then
-          p:install()
-        end
-      end
     end)
   end,
 }

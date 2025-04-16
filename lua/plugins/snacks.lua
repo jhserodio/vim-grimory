@@ -14,12 +14,12 @@ return {
        ╚████╔╝ ██║ ╚████║██║  ██║   ██║   ╚██████╔╝██║  ██║
         ╚═══╝  ╚═╝  ╚═══╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝
                                                           
-        _.zZ SERODIO - SOFTWARE CRAFTER ZZ._
+      _.zZ SERODIO - SOFTWARE CRAFTER ZZ._
         
-        ⚔   ☩  ⚔
+      ⚔   ☩  ⚔
         
-        Carambolas Never Die Edition
-        ]],
+      Carambolas Never Die Edition
+      ]],
 
         -- stylua: ignore
         ---@type snacks.dashboard.Item[]

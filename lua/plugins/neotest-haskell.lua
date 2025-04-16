@@ -1,0 +1,1 @@
+return { "mrcjkb/neotest-haskell" }
