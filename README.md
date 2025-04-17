@@ -80,10 +80,3 @@ vim
 ## 🎨 Tema e Estilo
 
 Este repositório utiliza o tema Gruvbox como padrão, oferecendo uma aparência agradável e personalizável para o Neovim. Para alterar o tema, edite o arquivo de configuração principal e escolha uma alternativa.
-## 🌐 Links Importantes
-
-```
-    Repositório Vim Grimory
-    Página de Configuração do GitHub Copilot
-    Documentação Oficial do Neovim
-```
