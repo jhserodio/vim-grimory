@@ -76,6 +76,21 @@ return {
     { "<leader>sw", LazyVim.pick("grep_string"), mode = "v", desc = "Selection (Root Dir)" },
     { "<leader>sW", LazyVim.pick("grep_string", { root = false }), mode = "v", desc = "Selection (cwd)" },
     { "<leader>uC", LazyVim.pick("colorscheme", { enable_preview = true }), desc = "Colorscheme with Preview" },
+    -- Additional git pickers
+    { "<leader>gb", "<cmd>Telescope git_branches<CR>", desc = "Branches" },
+    { "<leader>gf", "<cmd>Telescope git_files<CR>", desc = "Git Files" },
+    { "<leader>gS", "<cmd>Telescope git_stash<CR>", desc = "Stash" },
+    -- Additional search pickers
+    { "<leader>sn", "<cmd>Telescope notify<CR>", desc = "Notifications" },
+    { "<leader>sp", "<cmd>Telescope builtin<CR>", desc = "Telescope Pickers" },
+    { "<leader>st", "<cmd>Telescope treesitter<CR>", desc = "Treesitter Symbols" },
+    { "<leader>sy", "<cmd>Telescope lsp_document_symbols<CR>", desc = "Document Symbols" },
+    { "<leader>sY", "<cmd>Telescope lsp_workspace_symbols<CR>", desc = "Workspace Symbols" },
+    -- LSP pickers
+    { "<leader>lr", "<cmd>Telescope lsp_references<CR>", desc = "References" },
+    { "<leader>li", "<cmd>Telescope lsp_implementations<CR>", desc = "Implementations" },
+    { "<leader>ld", "<cmd>Telescope lsp_definitions<CR>", desc = "Definitions" },
+    { "<leader>lt", "<cmd>Telescope lsp_type_definitions<CR>", desc = "Type Definitions" },
     {
       "<leader>ss",
       function()

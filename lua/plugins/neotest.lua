@@ -4,21 +4,105 @@ return {
   dependencies = {
     "nvim-neotest/nvim-nio",
     "fredrikaverpil/neotest-golang",
+    "rouge8/neotest-rust",
+    "mrcjkb/neotest-haskell",
+    "rcasia/neotest-java",
+    "alfaix/neotest-gtest", -- C/C++ via Google Test
   },
   opts = {
     adapters = {
-      ["rustaceanvim.neotest"] = {},
+      -- Rust (usando neotest-rust em vez de rustaceanvim.neotest)
+      ["neotest-rust"] = {
+        args = { "--no-capture" },
+        dap_adapter = "codelldb",
+      },
+      -- Zig
       ["neotest-zig"] = {},
-      ["neotest-haskell"] = {},
+      -- Haskell
+      ["neotest-haskell"] = {
+        build_tools = { "stack", "cabal" },
+      },
+      -- Elixir
       ["neotest-elixir"] = {},
+      -- Go
       ["neotest-golang"] = {
-        -- Here we can set options for neotest-golang, e.g.
-        -- go_test_args = { "-v", "-race", "-count=1", "-timeout=60s" },
+        go_test_args = { "-v", "-race", "-count=1", "-timeout=60s" },
         dap_go_enabled = true, -- requires leoluz/nvim-dap-go
       },
+      -- Java
+      ["neotest-java"] = {
+        ignore_wrapper = false,
+      },
+      -- C/C++ Google Test
+      ["neotest-gtest"] = {},
     },
-    status = { virtual_text = true },
-    output = { open_on_run = true },
+    -- Enhanced status configuration
+    status = { 
+      virtual_text = true,
+      signs = true,
+    },
+    -- Enhanced output configuration
+    output = { 
+      open_on_run = "short",
+      enabled = true,
+    },
+    -- Enhanced icons
+    icons = {
+      passed = "",
+      running = "",
+      failed = "",
+      skipped = "",
+      unknown = "",
+      running_animated = vim.tbl_map(function(s)
+        return s .. " "
+      end, { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }),
+    },
+    -- Floating window configuration
+    floating = {
+      border = "rounded",
+      max_height = 0.6,
+      max_width = 0.6,
+    },
+    -- Diagnostic configuration
+    diagnostic = {
+      enabled = true,
+      severity = vim.diagnostic.severity.ERROR,
+    },
+    -- Summary window configuration
+    summary = {
+      enabled = true,
+      animated = true,
+      follow = true,
+      expand_errors = true,
+      mappings = {
+        attach = "a",
+        clear_marked = "M",
+        clear_target = "T",
+        debug = "d",
+        debug_marked = "D",
+        expand = { "<CR>", "<2-LeftMouse>" },
+        expand_all = "e",
+        jumpto = "i",
+        mark = "m",
+        next_failed = "J",
+        output = "o",
+        prev_failed = "K",
+        run = "r",
+        run_marked = "R",
+        short = "O",
+        stop = "u",
+        target = "t",
+        watch = "w",
+      },
+    },
+    -- Watch configuration
+    watch = {
+      enabled = true,
+      symbol_queries = {
+        go = [[((function_declaration name: (identifier) @name))((method_declaration name: (field_identifier) @name))]],
+        rust = [[((function_item name: (identifier) @name))((impl_item name: (identifier) @name))]],
+      },
+    },
     quickfix = {
       open = function()
         if LazyVim.has("trouble.nvim") then
@@ -124,5 +208,7 @@ return {
     { "<leader>tO", function() require("neotest").output_panel.toggle() end, desc = "Toggle Output Panel (Neotest)" },
     { "<leader>tS", function() require("neotest").run.stop() end, desc = "Stop (Neotest)" },
     { "<leader>tw", function() require("neotest").watch.toggle(vim.fn.expand("%")) end, desc = "Toggle Watch (Neotest)" },
+    { "<leader>td", function() require("neotest").run.run({ strategy = "dap" }) end, desc = "Debug Nearest (Neotest)" },
   },
 }
+

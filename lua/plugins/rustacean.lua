@@ -64,7 +64,7 @@ return {
         -- rust-analyzer language server configuration
         ["rust-analyzer"] = {
           cargo = {
-            allFeatures = true,
+            -- allFeatures = true, -- DEPRECATED in rust-analyzer (removed as per 4.24.1)
             loadOutDirsFromCheck = true,
             buildScripts = {
               enable = true,
