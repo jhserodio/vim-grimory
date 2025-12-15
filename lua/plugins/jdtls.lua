@@ -54,6 +54,61 @@ return {
               enabled = "all",
             },
           },
+          codeGeneration = {
+            toString = {
+              template = "${object.className}{${member.name()}=${member.value}, ${otherMembers}}",
+            },
+            useBlocks = true,
+          },
+          configuration = {
+            updateBuildConfiguration = "interactive",
+            runtimes = {},
+          },
+          eclipse = {
+            downloadSources = true,
+          },
+          implementationsCodeLens = {
+            enabled = true,
+          },
+          referencesCodeLens = {
+            enabled = true,
+          },
+          references = {
+            includeDecompiledSources = true,
+          },
+          signatureHelp = { enabled = true },
+          format = {
+            enabled = true,
+            settings = {
+              url = vim.fn.stdpath("config") .. "/lang-config/intellij-java-google-style.xml",
+              profile = "GoogleStyle",
+            },
+          },
+          saveActions = {
+            organizeImports = true,
+          },
+          completion = {
+            favoriteStaticMembers = {
+              "org.junit.jupiter.api.Assertions.*",
+              "org.junit.Assert.*",
+              "org.junit.Assume.*",
+              "org.mockito.Mockito.*",
+              "org.mockito.ArgumentMatchers.*",
+              "org.mockito.Answers.*",
+            },
+            importOrder = {
+              "java",
+              "javax",
+              "com",
+              "org",
+            },
+          },
+          sources = {
+            organizeImports = {
+              starThreshold = 9999,
+              staticStarThreshold = 9999,
+            },
+          },
         },
       },
     }

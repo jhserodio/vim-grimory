@@ -183,6 +183,12 @@ return {
             "--completion-style=detailed",
             "--function-arg-placeholders",
             "--fallback-style=llvm",
+            "--pch-storage=memory",
+            "--all-scopes-completion",
+            "--completion-style=detailed",
+            "--header-insertion-decorators",
+            "-j=4",
+            "--malloc-trim",
           },
           init_options = {
             usePlaceholders = true,
