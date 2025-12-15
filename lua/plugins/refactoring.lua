@@ -9,9 +9,11 @@ return {
     { "<leader>r", "", desc = "+refactor", mode = { "n", "v" } },
     {
       "<leader>rs",
-      pick,
+      function()
+        require("telescope").extensions.refactoring.refactors()
+      end,
       mode = "v",
-      desc = "Refactor",
+      desc = "Refactor (Telescope)",
     },
     {
       "<leader>ri",

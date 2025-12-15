@@ -1,7 +1,7 @@
 return {
   "mfussenegger/nvim-jdtls",
   dependencies = { "folke/which-key.nvim" },
-  ft = java_filetypes,
+  ft = { "java" },
   opts = function()
     local cmd = { vim.fn.exepath("jdtls") }
     if LazyVim.has("mason.nvim") then

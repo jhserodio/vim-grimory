@@ -1,6 +1,6 @@
 return {
   "mrcjkb/haskell-tools.nvim",
-  version = "^3",
+  version = "^4",
   ft = { "haskell", "lhaskell", "cabal", "cabalproject" },
   dependencies = {
     { "nvim-telescope/telescope.nvim", optional = true },

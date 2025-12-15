@@ -10,7 +10,7 @@ return {
       "stylua",
       "shfmt",
       "prettier",
-      "codellbd",
+      "codelldb",
       "hadolint",
       "goimports",
       "gofumpt",

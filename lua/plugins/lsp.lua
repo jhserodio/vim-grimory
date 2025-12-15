@@ -1,3 +1,6 @@
+-- Definir variável diagnostics para Rust
+local diagnostics = vim.g.lazyvim_rust_diagnostics or "rust-analyzer"
+
 return {
   "neovim/nvim-lspconfig",
   event = "LazyFile",
@@ -75,7 +78,9 @@ return {
         bacon_ls = {
           enabled = diagnostics == "bacon-ls",
         },
-        rust_analyzer = { enabled = false },
+        rust_analyzer = { 
+          enabled = diagnostics == "rust-analyzer"
+        },
         jsonls = {
           -- lazy-load schemastore when needed
           on_new_config = function(new_config)

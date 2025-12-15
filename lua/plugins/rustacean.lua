@@ -1,6 +1,8 @@
+local diagnostics = vim.g.lazyvim_rust_diagnostics or "rust-analyzer"
+
 return {
   "mrcjkb/rustaceanvim",
-  version = vim.fn.has("nvim-0.10.0") == 0 and "^4" or false,
+  version = false,
   ft = { "rust" },
   opts = {
     server = {
@@ -23,7 +25,11 @@ return {
             },
           },
           -- Add clippy lints for Rust if using rust-analyzer
-          checkOnSave = diagnostics == "rust-analyzer",
+          checkOnSave = {
+            enable = true,
+            command = "clippy",
+            extraArgs = { "--no-deps" },
+          },
           -- Enable diagnostics if using rust-analyzer
           diagnostics = {
             enable = diagnostics == "rust-analyzer",

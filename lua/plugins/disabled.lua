@@ -1,4 +1,4 @@
 return {
-  -- disable trouble
-  { "folke/trouble.nvim", enabled = false },
+  -- Plugins desabilitados
+  -- trouble.nvim foi re-habilitado (veja trouble.lua)
 }
