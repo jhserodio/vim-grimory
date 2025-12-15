@@ -1,56 +1,54 @@
--- NOTE: Only enable either copilot-vim or codeium-vim at the same time
+-- Modern Copilot Stack with copilot.lua + Blink integration
 return {
-  -- Use native snippets from Neovim v0.10
   {
     "hrsh7th/nvim-cmp",
     optional = true,
     ---@param opts cmp.ConfigSchema
     opts = function(_, opts)
-      -- Disable ghost text for nvim-cmp, use copilot suggestion instead
+      -- Disable ghost text for nvim-cmp
       opts.experimental.ghost_text = false
     end,
-    keys = function()
-      return {}
-    end,
   },
-  -- Setup copilot.vim
+  -- Modern copilot.lua (replaces copilot.vim)
   {
-    "github/copilot.vim",
-    event = "VeryLazy",
-    config = function()
-      -- For copilot.vim
-      -- enable copilot for specific filetypes
-      vim.g.copilot_filetypes = {
+    "zbirenbaum/copilot.lua",
+    cmd = "Copilot",
+    event = "InsertEnter",
+    opts = {
+      suggestion = {
+        enabled = false, -- Disable when using blink-cmp-copilot
+        auto_trigger = false,
+      },
+      panel = {
+        enabled = false, -- Disable panel when using blink-cmp-copilot
+      },
+      filetypes = {
+        yaml = true,
+        markdown = true,
+        help = false,
+        gitcommit = true,
+        gitrebase = false,
+        hgcommit = false,
+        svn = false,
+        cvs = false,
+        ["."] = false,
         ["TelescopePrompt"] = false,
-      }
-
-      -- Set to true to assume that copilot is already mapped
-      vim.g.copilot_assume_mapped = true
-      -- Set workspace folders
-      vim.g.copilot_workspace_folders = "~/Projects"
-
-      -- Setup keymaps
-      local keymap = vim.keymap.set
-      local opts = { silent = true }
-
-      -- Set <C-y> to accept copilot suggestion
-      keymap("i", "<C-y>", 'copilot#Accept("\\<CR>")', { expr = true, replace_keycodes = false })
-
-      -- Set <C-i> to accept line
-      keymap("i", "<C-i>", "<Plug>(copilot-accept-line)", opts)
-
-      -- Set <C-j> to next suggestion, <C-k> to previous suggestion, <C-l> to suggest
-      keymap("i", "<C-j>", "<Plug>(copilot-next)", opts)
-      keymap("i", "<C-k>", "<Plug>(copilot-previous)", opts)
-      keymap("i", "<C-l>", "<Plug>(copilot-suggest)", opts)
-
-      -- Set <C-d> to dismiss suggestion
-      keymap("i", "<C-d>", "<Plug>(copilot-dismiss)", opts)
-    end,
+      },
+      copilot_node_command = "node", -- Node.js version must be > 18.x
+      server_opts_overrides = {
+        settings = {
+          advanced = {
+            listCount = 10, -- #completions for panel
+            inlineSuggestCount = 3, -- #completions for getCompletions
+          },
+        },
+      },
+    },
   },
   -- Add status line icon for copilot
   {
     "nvim-lualine/lualine.nvim",
+    optional = true,
     opts = function(_, opts)
       table.insert(opts.sections.lualine_x, 2, {
         function()
@@ -58,7 +56,7 @@ return {
           return icon
         end,
         cond = function()
-          local ok, clients = pcall(vim.lsp.get_active_clients, { name = "copilot", bufnr = 0 })
+          local ok, clients = pcall(vim.lsp.get_clients, { name = "copilot", bufnr = 0 })
           return ok and #clients > 0
         end,
         color = function()

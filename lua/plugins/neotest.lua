@@ -22,7 +22,7 @@ return {
     quickfix = {
       open = function()
         if LazyVim.has("trouble.nvim") then
-          require("trouble").open({ mode = "quickfix", focus = false })
+          require("trouble").toggle({ mode = "quickfix", focus = false })
         else
           vim.cmd("copen")
         end
@@ -60,7 +60,16 @@ return {
           end
           vim.schedule(function()
             local trouble = require("trouble")
-            if trouble.is_open() then
+            local windows = vim.api.nvim_list_wins()
+            local trouble_open = false
+            for _, win in ipairs(windows) do
+              local buf = vim.api.nvim_win_get_buf(win)
+              if vim.bo[buf].filetype == "trouble" then
+                trouble_open = true
+                break
+              end
+            end
+            if trouble_open then
               trouble.refresh()
               if failed == 0 then
                 trouble.close()

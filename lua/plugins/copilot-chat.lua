@@ -20,7 +20,7 @@ local prompts = {
 }
 
 return {
-  { import = "plugins.copilot" }, -- Or use { import = "lazyvim.plugins.extras.coding.copilot" },
+  { import = "plugins.copilot" },
   {
     "folke/which-key.nvim",
     optional = true,
@@ -43,9 +43,9 @@ return {
     dir = IS_DEV and "~/Projects/research/CopilotChat.nvim" or nil,
     "CopilotC-Nvim/CopilotChat.nvim",
     branch = "main",
-    -- version = "v3.3.0", -- Use a specific version to prevent breaking changes
     dependencies = {
-      { "nvim-telescope/telescope.nvim" }, -- Use telescope for help actions
+      { "zbirenbaum/copilot.lua" }, -- Use modern copilot.lua
+      { "nvim-telescope/telescope.nvim" },
       { "nvim-lua/plenary.nvim" },
     },
     opts = {
@@ -53,34 +53,42 @@ return {
       answer_header = "## Copilot ",
       error_header = "## Error ",
       prompts = prompts,
-      -- model = "claude-3.7-sonnet",
+      -- Agent mode with tool calling (requires latest CopilotChat)
+      agent = "copilot",
+      context = "buffers", -- Use buffers as default context
+      -- model = "claude-3.5-sonnet", -- Can switch between models
+      -- Enable tools for agent mode
+      tools = {
+        {
+          name = "analyze",
+          description = "Analyze code and provide insights",
+        },
+        {
+          name = "test",
+          description = "Generate or run tests for selected code",
+        },
+      },
       mappings = {
-        -- Use tab for completion
         complete = {
           detail = "Use @<Tab> or /<Tab> for options.",
           insert = "<Tab>",
         },
-        -- Close the chat
         close = {
           normal = "q",
           insert = "<C-c>",
         },
-        -- Reset the chat buffer
         reset = {
           normal = "<C-x>",
           insert = "<C-x>",
         },
-        -- Submit the prompt to Copilot
         submit_prompt = {
           normal = "<CR>",
           insert = "<C-CR>",
         },
-        -- Accept the diff
         accept_diff = {
           normal = "<C-y>",
           insert = "<C-y>",
         },
-        -- Show help
         show_help = {
           normal = "g?",
         },

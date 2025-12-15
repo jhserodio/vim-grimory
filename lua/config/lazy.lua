@@ -42,11 +42,14 @@ require("lazy").setup({
       -- disable some rtp plugins
       disabled_plugins = {
         "gzip",
-        "tarPlugin",
+        -- "tarPlugin", -- disabled temporarily
         "tohtml",
         "tutor",
         "zipPlugin",
       },
     },
+  },
+  git = {
+    timeout = 300,
   },
 })
