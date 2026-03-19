@@ -106,5 +106,10 @@ O ambiente lida com terminais de forma flutuante ou nativa:
 - **Testes (Neotest)**: `<leader>tr` (Rodar teste próximo), `<leader>tt` (Rodar arquivo inteiro), `<leader>to` (Ver Output).
 - **Debugger (DAP)**: `<leader>db` (Toggle Breakpoint), `<leader>dc` (Continue/Start), `<leader>di` / `<leader>do` (Step Into/Out), `<leader>du` (Abrir interface do DAP).
 
+## ⚙️ Quirks do Ambiente e Troubleshooting
+- **SO:** Focado primariamente em ambientes Linux (incluindo suporte nativo a Fedora/Wayland via `wl-clipboard`).
+- **Snacks.nvim:** Os módulos `statuscolumn` e `bigfile` estão intencionalmente **desabilitados** para evitar conflitos de renderização no LazyVim. Não sugira ativá-los.
+- **Mason & DAP:** O evento de pós-instalação de LSPs e Debuggers (`mason-nvim-dap`) possui tratamento de erro customizado (`pcall`) para não quebrar a inicialização caso o server falhe.
+
 ---
 **Diretriz Final para a IA:** Quando o usuário fizer uma pergunta, analise o contexto. Se for um problema simples de texto, recomende Motions (`ciw`, `vip`) ou Visual Block (`<C-v>`). Se for uma busca no código, recomende o Telescope (`<leader>sg`). Se for reestruturação pesada, recomende o `grug-far` (`<leader>sr`) ou o Copilot Chat (`<leader>aa`).
