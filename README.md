@@ -289,6 +289,45 @@ sudo pacman -S gcc clang rust go
 sudo pacman -S lazygit xclip wl-clipboard
 ```
 
+#### 🎩 **Linux (Fedora/RHEL)**
+
+```bash
+# Neovim 0.11.2+
+sudo dnf install -y neovim
+
+# Dependências essenciais
+sudo dnf install -y \
+  git curl wget \
+  ripgrep \
+  cmake gcc-c++ \
+  python3 python3-pip \
+  nodejs npm \
+  unzip tar gzip
+
+# Compiladores (opcional mas recomendado)
+sudo dnf install -y gcc clang rust cargo golang
+
+# Ferramentas extras (fd, fzf, lazygit via binários)
+mkdir -p ~/.local/bin
+cd ~/.local/bin
+
+# fd
+curl -sL https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-x86_64-unknown-linux-gnu.tar.gz | tar xz --strip-components=1 fd-v10.2.0-x86_64-unknown-linux-gnu/fd
+
+# fzf
+curl -sL https://github.com/junegunn/fzf/releases/download/v0.59.0/fzf-0.59.0-linux_amd64.tar.gz | tar xz
+
+# lazygit
+LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+curl -sL "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" | tar xz
+
+# Adicione ao PATH (adicionar no ~/.bashrc ou ~/.zshrc)
+export PATH="$HOME/.local/bin:$PATH"
+
+# Clipboard (Wayland)
+sudo dnf install -y wl-clipboard
+```
+
 #### 🍎 **macOS**
 
 ```bash

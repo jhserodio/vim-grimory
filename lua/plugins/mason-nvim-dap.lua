@@ -1,6 +1,6 @@
 return {
   "jay-babu/mason-nvim-dap.nvim",
-  dependencies = "mason.nvim",
+  dependencies = { "mason.nvim", "nvim-dap" },
   cmd = { "DapInstall", "DapUninstall" },
   opts = {
     -- Makes a best effort to setup the various debuggers with
@@ -17,6 +17,10 @@ return {
       -- Update this to ensure that you have the debuggers for the langs you want
     },
   },
-  -- mason-nvim-dap is loaded when nvim-dap loads
-  config = function() end,
+  config = function(_, opts)
+    local ok, mason_dap = pcall(require, "mason-nvim-dap")
+    if ok then
+      mason_dap.setup(opts)
+    end
+  end,
 }

@@ -1,6 +1,17 @@
 return {
-  "snacks.nvim",
+  "folke/snacks.nvim",
+  priority = 1000,
+  lazy = false,
   opts = {
+    -- Desabilitar bigfile para evitar conflitos
+    bigfile = { enabled = false },
+    -- Desabilitar statuscolumn se causar problemas
+    statuscolumn = { enabled = false },
+    -- Configurar notifier
+    notifier = { enabled = true },
+    -- Configurar quickfile
+    quickfile = { enabled = true },
+    -- Outras configurações
     dashboard = {
       preset = {
         pick = function(cmd, opts)
