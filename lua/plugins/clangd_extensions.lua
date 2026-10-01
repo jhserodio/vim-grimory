@@ -1,7 +1,13 @@
 return {
   "p00f/clangd_extensions.nvim",
-  lazy = true,
-  config = function() end,
+
+  ft = {
+    "c",
+    "cpp",
+    "objc",
+    "objcpp",
+  },
+
   opts = {
     inlay_hints = {
       inline = false,

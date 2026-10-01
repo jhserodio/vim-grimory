@@ -31,6 +31,7 @@ return {
       -- Java / Kotlin
       "java-debug-adapter",
       "java-test",
+      "jdtls",
       "klint",
 
       -- Terraform

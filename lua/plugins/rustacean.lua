@@ -11,51 +11,51 @@ return {
         vim.keymap.set("n", "<leader>cR", function()
           vim.cmd.RustLsp("codeAction")
         end, { desc = "Code Action (Rust)", buffer = bufnr })
-        
+
         -- Debugging
         vim.keymap.set("n", "<leader>dr", function()
           vim.cmd.RustLsp("debuggables")
         end, { desc = "Rust Debuggables", buffer = bufnr })
-        
+
         -- Refactoring tools
         vim.keymap.set("n", "<leader>rh", function()
           vim.cmd.RustLsp("hover", "actions")
         end, { desc = "Hover Actions (Rust)", buffer = bufnr })
-        
+
         vim.keymap.set("n", "<leader>rm", function()
           vim.cmd.RustLsp("moveItem", "up")
         end, { desc = "Move Item Up (Rust)", buffer = bufnr })
-        
+
         vim.keymap.set("n", "<leader>rM", function()
           vim.cmd.RustLsp("moveItem", "down")
         end, { desc = "Move Item Down (Rust)", buffer = bufnr })
-        
+
         vim.keymap.set("n", "J", function()
           vim.cmd.RustLsp("joinLines")
         end, { desc = "Join Lines (Rust)", buffer = bufnr })
-        
+
         vim.keymap.set("n", "<leader>rS", function()
           vim.cmd.RustLsp("ssr")
         end, { desc = "Structural Search Replace (Rust)", buffer = bufnr })
-        
+
         -- Explainers
         vim.keymap.set("n", "<leader>re", function()
           vim.cmd.RustLsp("explainError")
         end, { desc = "Explain Error (Rust)", buffer = bufnr })
-        
+
         vim.keymap.set("n", "<leader>rc", function()
           vim.cmd.RustLsp("openCargo")
         end, { desc = "Open Cargo.toml (Rust)", buffer = bufnr })
-        
+
         vim.keymap.set("n", "<leader>rp", function()
           vim.cmd.RustLsp("parentModule")
         end, { desc = "Parent Module (Rust)", buffer = bufnr })
-        
+
         -- Testing
         vim.keymap.set("n", "<leader>rt", function()
           vim.cmd.RustLsp("runnables")
         end, { desc = "Rust Runnables", buffer = bufnr })
-        
+
         vim.keymap.set("n", "<leader>rT", function()
           vim.cmd.RustLsp("testables")
         end, { desc = "Rust Testables", buffer = bufnr })
@@ -228,23 +228,22 @@ return {
   },
   config = function(_, opts)
     if LazyVim.has("mason.nvim") then
-      local package_path = require("mason-registry").get_package("codelldb"):get_install_path()
-      local codelldb = package_path .. "/extension/adapter/codelldb"
-      local library_path = package_path .. "/extension/lldb/lib/liblldb.dylib"
-      local uname = io.popen("uname"):read("*l")
-      if uname == "Linux" then
-        library_path = package_path .. "/extension/lldb/lib/liblldb.so"
-      end
-      opts.dap = {
-        adapter = require("rustaceanvim.config").get_codelldb_adapter(codelldb, library_path),
-      }
-    end
-    vim.g.rustaceanvim = vim.tbl_deep_extend("keep", vim.g.rustaceanvim or {}, opts or {})
-    if vim.fn.executable("rust-analyzer") == 0 then
-      LazyVim.error(
-        "**rust-analyzer** not found in PATH, please install it.\nhttps://rust-analyzer.github.io/",
-        { title = "rustaceanvim" }
+      local codelldb = vim.fn.exepath("codelldb")
+
+      local library_ext = vim.fn.has("macunix") == 1
+          and ".dylib"
+          or ".so"
+
+      local library_path = vim.fn.expand(
+        "$MASON/opt/lldb/lib/liblldb" .. library_ext
       )
+
+      opts.dap = {
+        adapter = require("rustaceanvim.config").get_codelldb_adapter(
+          codelldb,
+          library_path
+        ),
+      }
     end
   end,
 }
