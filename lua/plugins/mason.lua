@@ -11,9 +11,7 @@ return {
       "markdown-toc",
 
       -- Rust
-      "rust-analyzer",
       "codelldb",
-      "bacon",
 
       -- Javascript / Typescript
       "js-debug-adapter",

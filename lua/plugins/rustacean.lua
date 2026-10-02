@@ -1,249 +1,162 @@
+-- ============================================================================
+-- Vim Grimory - Rust Development
+--
+-- Neovim: 0.11.x
+-- rustaceanvim: v8.0.5
+--
+-- LSP: rust-analyzer (managed by rustaceanvim)
+-- Diagnostics: rust-analyzer + Clippy
+-- Formatting: rustfmt via conform.nvim
+-- Debugging: CodeLLDB via nvim-dap
+-- ============================================================================
+
 local diagnostics = vim.g.lazyvim_rust_diagnostics or "rust-analyzer"
 
 return {
   "mrcjkb/rustaceanvim",
-  version = false,
+
+  -- v9 requires Neovim >= 0.12.
+  tag = "v8.0.5",
+
   ft = { "rust" },
+
   opts = {
     server = {
+
+      -- ====================================================================
+      -- Rust keymaps
+      -- ====================================================================
+
       on_attach = function(_, bufnr)
+        local function map(lhs, command, desc)
+          vim.keymap.set("n", lhs, function()
+            vim.cmd.RustLsp(command)
+          end, {
+            buffer = bufnr,
+            silent = true,
+            desc = desc,
+          })
+        end
+
         -- Code actions
-        vim.keymap.set("n", "<leader>cR", function()
-          vim.cmd.RustLsp("codeAction")
-        end, { desc = "Code Action (Rust)", buffer = bufnr })
+        map("<leader>cR", "codeAction", "Rust Code Action")
+
+        -- Rust tools
+        map("<leader>rh", { "hover", "actions" }, "Hover Actions")
+        map("<leader>re", "explainError", "Explain Error")
+        map("<leader>rc", "openCargo", "Open Cargo.toml")
+        map("<leader>rp", "parentModule", "Parent Module")
+
+        -- Execution
+        map("<leader>rr", "runnables", "Rust Runnables")
+        map("<leader>rt", "testables", "Rust Testables")
 
         -- Debugging
-        vim.keymap.set("n", "<leader>dr", function()
-          vim.cmd.RustLsp("debuggables")
-        end, { desc = "Rust Debuggables", buffer = bufnr })
+        map("<leader>rD", "debuggables", "Rust Debuggables")
 
-        -- Refactoring tools
-        vim.keymap.set("n", "<leader>rh", function()
-          vim.cmd.RustLsp("hover", "actions")
-        end, { desc = "Hover Actions (Rust)", buffer = bufnr })
+        -- Code generation / refactoring
+        map("<leader>rS", "ssr", "Structural Search Replace")
+        map("<leader>rE", "expandMacro", "Expand Macro")
 
-        vim.keymap.set("n", "<leader>rm", function()
-          vim.cmd.RustLsp("moveItem", "up")
-        end, { desc = "Move Item Up (Rust)", buffer = bufnr })
-
-        vim.keymap.set("n", "<leader>rM", function()
-          vim.cmd.RustLsp("moveItem", "down")
-        end, { desc = "Move Item Down (Rust)", buffer = bufnr })
-
-        vim.keymap.set("n", "J", function()
-          vim.cmd.RustLsp("joinLines")
-        end, { desc = "Join Lines (Rust)", buffer = bufnr })
-
-        vim.keymap.set("n", "<leader>rS", function()
-          vim.cmd.RustLsp("ssr")
-        end, { desc = "Structural Search Replace (Rust)", buffer = bufnr })
-
-        -- Explainers
-        vim.keymap.set("n", "<leader>re", function()
-          vim.cmd.RustLsp("explainError")
-        end, { desc = "Explain Error (Rust)", buffer = bufnr })
-
-        vim.keymap.set("n", "<leader>rc", function()
-          vim.cmd.RustLsp("openCargo")
-        end, { desc = "Open Cargo.toml (Rust)", buffer = bufnr })
-
-        vim.keymap.set("n", "<leader>rp", function()
-          vim.cmd.RustLsp("parentModule")
-        end, { desc = "Parent Module (Rust)", buffer = bufnr })
-
-        -- Testing
-        vim.keymap.set("n", "<leader>rt", function()
-          vim.cmd.RustLsp("runnables")
-        end, { desc = "Rust Runnables", buffer = bufnr })
-
-        vim.keymap.set("n", "<leader>rT", function()
-          vim.cmd.RustLsp("testables")
-        end, { desc = "Rust Testables", buffer = bufnr })
+        map("<leader>rm", { "moveItem", "up" }, "Move Item Up")
+        map("<leader>rM", { "moveItem", "down" }, "Move Item Down")
       end,
+
+      -- ====================================================================
+      -- rust-analyzer
+      -- ====================================================================
+
       default_settings = {
-        -- rust-analyzer language server configuration
         ["rust-analyzer"] = {
+
           cargo = {
-            -- allFeatures = true, -- DEPRECATED in rust-analyzer (removed as per 4.24.1)
-            loadOutDirsFromCheck = true,
             buildScripts = {
               enable = true,
             },
-            -- Auto-reload on Cargo.toml changes
+
             autoreload = true,
           },
-          -- Add clippy lints for Rust if using rust-analyzer
-          checkOnSave = {
-            enable = true,
+
+          -- Modern rust-analyzer configuration.
+          -- checkOnSave is a boolean, not a table.
+
+          checkOnSave = diagnostics == "rust-analyzer",
+
+          check = {
             command = "clippy",
-            extraArgs = { "--no-deps" },
             allTargets = true,
           },
-          -- Enable diagnostics if using rust-analyzer
+
           diagnostics = {
             enable = diagnostics == "rust-analyzer",
-            experimental = {
-              enable = true,
-            },
-            styleLints = {
-              enable = true,
-            },
           },
+
+          -- Procedural macros
           procMacro = {
             enable = true,
-            attributes = {
-              enable = true,
-            },
-            ignored = {
-              ["async-trait"] = { "async_trait" },
-              ["napi-derive"] = { "napi" },
-              ["async-recursion"] = { "async_recursion" },
-            },
           },
-          -- Inlay hints configuration
+
+          -- =================================================================
+          -- Inlay hints
+          -- =================================================================
+
           inlayHints = {
-            bindingModeHints = {
-              enable = false,
-            },
             chainingHints = {
               enable = true,
             },
-            closingBraceHints = {
-              enable = true,
-              minLines = 25,
-            },
-            closureReturnTypeHints = {
-              enable = "never",
-            },
-            lifetimeElisionHints = {
-              enable = "never",
-              useParameterNames = false,
-            },
-            maxLength = 25,
+
             parameterHints = {
               enable = true,
             },
-            reborrowHints = {
-              enable = "never",
-            },
-            renderColons = true,
+
             typeHints = {
               enable = true,
               hideClosureInitialization = false,
               hideNamedConstructor = false,
             },
+
+            closingBraceHints = {
+              enable = true,
+              minLines = 25,
+            },
+
+            lifetimeElisionHints = {
+              enable = "never",
+            },
+
+            maxLength = 25,
           },
-          -- Imports optimization
-          imports = {
-            granularity = {
-              group = "module",
-            },
-            prefix = "self",
-          },
-          -- Lens configuration
-          lens = {
-            enable = true,
-            debug = {
-              enable = true,
-            },
-            implementations = {
-              enable = true,
-            },
-            run = {
-              enable = true,
-            },
-            references = {
-              adt = {
-                enable = true,
-              },
-              enumVariant = {
-                enable = true,
-              },
-              method = {
-                enable = true,
-              },
-              trait = {
-                enable = true,
-              },
-            },
-          },
-          -- Hover actions
-          hover = {
-            actions = {
-              enable = true,
-              implementations = {
-                enable = true,
-              },
-              references = {
-                enable = true,
-              },
-              run = {
-                enable = true,
-              },
-            },
-            documentation = {
-              enable = true,
-            },
-          },
-          -- Completion settings
-          completion = {
-            autoimport = {
-              enable = true,
-            },
-            autoself = {
-              enable = true,
-            },
-            callable = {
-              snippets = "fill_arguments",
-            },
-            postfix = {
-              enable = true,
-            },
-            privateEditable = {
-              enable = false,
-            },
-          },
-          -- Assist (code generation)
-          assist = {
-            importEnforceGranularity = true,
-            importPrefix = "self",
-            expressionFillDefault = "default",
-          },
+
+          -- =================================================================
+          -- Workspace
+          -- =================================================================
+
           files = {
-            excludeDirs = {
+            exclude = {
               ".direnv",
               ".git",
-              ".github",
-              ".gitlab",
-              "bin",
+              ".jj",
               "node_modules",
               "target",
               "venv",
               ".venv",
             },
+
+            watcher = "client",
           },
         },
       },
     },
   },
+
+  -- rustaceanvim does not use a conventional setup() function.
+  -- The configuration must be provided through vim.g.rustaceanvim.
+
   config = function(_, opts)
-    if LazyVim.has("mason.nvim") then
-      local codelldb = vim.fn.exepath("codelldb")
+    vim.g.rustaceanvim = vim.tbl_deep_extend("keep", vim.g.rustaceanvim or {}, opts or {})
 
-      local library_ext = vim.fn.has("macunix") == 1
-          and ".dylib"
-          or ".so"
-
-      local library_path = vim.fn.expand(
-        "$MASON/opt/lldb/lib/liblldb" .. library_ext
-      )
-
-      opts.dap = {
-        adapter = require("rustaceanvim.config").get_codelldb_adapter(
-          codelldb,
-          library_path
-        ),
-      }
+    if vim.fn.executable("rust-analyzer") == 0 then
+      vim.notify("rust-analyzer was not found in PATH", vim.log.levels.ERROR, { title = "Grimory / Rust" })
     end
   end,
 }

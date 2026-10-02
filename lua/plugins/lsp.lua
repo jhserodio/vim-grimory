@@ -67,11 +67,12 @@ return {
       },
 
       bacon_ls = {
-        enabled = rust_diagnostics == "bacon-ls",
+        enabled = false,
       },
 
       -- TypeScript: use VTSLS
       tsserver = { enabled = false },
+      nvim,
       ts_ls = { enabled = false },
       tsc = { enabled = false },
 
