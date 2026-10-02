@@ -1,1 +1,1 @@
-return { "PaterJason/nvim-treesitter-sexp", opts = {}, event = "LazyFile" }
+return { "PaterJason/nvim-treesitter-sexp", enable = false }

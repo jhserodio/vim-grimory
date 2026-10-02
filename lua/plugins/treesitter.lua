@@ -1,127 +1,58 @@
+-- Vim Grimory - Tree-sitter
+-- Extend LazyVim's configuration.
+-- Do not replace its setup, build or version pin.
+
 return {
   "nvim-treesitter/nvim-treesitter",
-  version = false, -- last release is way too old and doesn't work on Windows
-  build = ":TSUpdate",
-  event = { "LazyFile", "VeryLazy" },
-  lazy = vim.fn.argc(-1) == 0, -- load treesitter early when opening a file from the cmdline
-  dependencies = {
-    {
-      "nvim-treesitter/nvim-treesitter",
-      build = function()
-        require("nvim-treesitter.install").prefer_git = true
-      end,
-    },
-  },
-  init = function(plugin)
-    -- PERF: add nvim-treesitter queries to the rtp and it's custom query predicates early
-    -- This is needed because a bunch of plugins no longer `require("nvim-treesitter")`, which
-    -- no longer trigger the **nvim-treesitter** module to be loaded in time.
-    -- Luckily, the only things that those plugins need are the custom queries, which we make available
-    -- during startup.
-    require("lazy.core.loader").add_to_rtp(plugin)
-    -- Safely load query_predicates (may not exist on first install)
-    pcall(require, "nvim-treesitter.query_predicates")
-  end,
-  cmd = { "TSUpdateSync", "TSUpdate", "TSInstall" },
-  keys = {
-    { "<c-space>", desc = "Increment Selection" },
-    { "<bs>", desc = "Decrement Selection", mode = "x" },
-  },
+
+  -- LazyVim appends this list to its built-in parsers.
   opts_extend = { "ensure_installed" },
-  ---@type TSConfig
-  ---@diagnostic disable-next-line: missing-fields
+
   opts = {
-    highlight = { enable = true },
-    indent = { enable = true },
-    auto_install = false,
-    prefer_git = true,
     ensure_installed = {
+      -- Rust and C/C++
+      "rust",
+      "cpp", -- C is already provided by LazyVim
+
+      -- Web (HTML, JS, TS, TSX, JSON, Markdown
+      -- are already included in LazyVim).
       "astro",
-      "bash",
-      "c",
-      "cpp",
       "css",
-      "diff",
+      "scss",
+      "svelte",
+      "vue",
+      "json5",
+
+      -- Build, containers and infrastructure
       "dockerfile",
       "git_config",
-      "gitcommit",
       "git_rebase",
-      "gitignore",
       "gitattributes",
+      "gitcommit",
+      "gitignore",
+      "hcl",
+      "terraform",
+
+      -- Other languages already supported by Grimory
+      "clojure",
+      "eex",
+      "elixir",
       "go",
       "gomod",
-      "gowork",
       "gosum",
-      "html",
+      "gowork",
+      "haskell",
+      "heex",
       "java",
-      "javascript",
-      "jsdoc",
-      "json",
-      "jsonc",
-      "json5",
       "kotlin",
-      "lua",
-      "luadoc",
-      "luap",
-      "markdown",
-      "markdown_inline",
-      "printf",
       "prisma",
-      "python",
-      "query",
-      "regex",
-      "toml",
-      "tsx",
-      "typescript",
-      "terraform",
-      "hcl",
-      "vim",
-      "vimdoc",
-      "xml",
-      "yaml",
-      "rust",
       "ron",
       "zig",
-      "haskell",
-      "elixir",
-      "heex",
-      "eex",
-      "clojure",
-    },
-    incremental_selection = {
-      enable = true,
-      keymaps = {
-        init_selection = "<C-space>",
-        node_incremental = "<C-space>",
-        scope_incremental = false,
-        node_decremental = "<bs>",
-      },
-    },
-    textobjects = {
-      move = {
-        enable = true,
-        goto_next_start = { ["]f"] = "@function.outer", ["]c"] = "@class.outer", ["]a"] = "@parameter.inner" },
-        goto_next_end = { ["]F"] = "@function.outer", ["]C"] = "@class.outer", ["]A"] = "@parameter.inner" },
-        goto_previous_start = { ["[f"] = "@function.outer", ["[c"] = "@class.outer", ["[a"] = "@parameter.inner" },
-        goto_previous_end = { ["[F"] = "@function.outer", ["[C"] = "@class.outer", ["[A"] = "@parameter.inner" },
-      },
     },
   },
-  ---@param opts TSConfig
-  config = function(_, opts)
-    require("nvim-treesitter.install").prefer_git = true
-    require("nvim-treesitter.install").compilers = { "gcc", "clang", "cc" }
-    
-    -- New treesitter API - no need for configs.setup()
-    -- Just ensure parsers are installed
-    if type(opts.ensure_installed) == "table" then
-      opts.ensure_installed = LazyVim.dedup(opts.ensure_installed)
-      -- Install parsers asynchronously
-      vim.schedule(function()
-        require("nvim-treesitter").install(opts.ensure_installed)
-      end)
-    end
-    
+
+  -- Preserve the mapping from Grimory's previous config.
+  init = function()
     vim.treesitter.language.register("markdown", "livebook")
   end,
 }
