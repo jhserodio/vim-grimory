@@ -1,1 +1,1 @@
-return { "PaterJason/nvim-treesitter-sexp", enable = false }
+return { "PaterJason/nvim-treesitter-sexp", enabled = false }

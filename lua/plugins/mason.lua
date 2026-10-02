@@ -17,9 +17,6 @@ local extra_tools = {
   "codelldb",
   "bacon",
 
-  -- JavaScript / TypeScript
-  "js-debug-adapter",
-
   -- Containers
   "hadolint",
 
