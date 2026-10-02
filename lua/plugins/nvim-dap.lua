@@ -1,207 +1,128 @@
+-- ============================================================================
+-- Vim Grimory - Debugging
+--
+-- Core lifecycle and keymaps: LazyVim dap.core
+-- Rust: rustaceanvim
+-- C/C++: CodeLLDB
+-- Go: nvim-dap-go
+-- Node.js: js-debug-adapter
+-- ============================================================================
+
 return {
   "mfussenegger/nvim-dap",
-  recommended = true,
-  desc = "Debugging support. Requires language specific adapters to be configured. (see lang extras)",
 
-  dependencies = {
-    {
-      "mason-org/mason.nvim",
-      opts = { ensure_installed = { "delve" } },
-    },
-    {
-      "leoluz/nvim-dap-go",
-      opts = {},
-    },
-    optional = true,
+  opts = function()
+    local dap = require("dap")
 
-    "rcarriga/nvim-dap-ui",
-    -- virtual text for the debugger
-    {
-      "theHamsta/nvim-dap-virtual-text",
-      opts = {},
-    },
+    -- ======================================================================
+    -- CodeLLDB
+    -- ======================================================================
 
-    {
-      "jbyuki/one-small-step-for-vimkind",
-      -- stylua: ignore
-      config = function()
-        local dap = require("dap")
-        dap.adapters.nlua = function(callback, conf)
-          local adapter = {
-            type = "server",
-            host = conf.host or "127.0.0.1",
-            port = conf.port or 8086,
-          }
-          if conf.start_neovim then
-            local dap_run = dap.run
-            dap.run = function(c)
-              adapter.port = c.port
-              adapter.host = c.host
-            end
-            require("osv").run_this()
-            dap.run = dap_run
-          end
-          callback(adapter)
-        end
-        dap.configurations.lua = {
-          {
-            type = "nlua",
-            request = "attach",
-            name = "Run this file",
-            start_neovim = {},
-          },
-          {
-            type = "nlua",
-            request = "attach",
-            name = "Attach to running Neovim instance (port = 8086)",
-            port = 8086,
-          },
-        }
-      end,
-    },
-  },
+    dap.adapters.codelldb = {
+      type = "server",
+      host = "127.0.0.1",
+      port = "${port}",
 
-  keys = {
-    {
-      "<leader>dB",
-      function()
-        require("dap").set_breakpoint(vim.fn.input("Breakpoint condition: "))
-      end,
-      desc = "Breakpoint Condition",
-    },
-    {
-      "<leader>db",
-      function()
-        require("dap").toggle_breakpoint()
-      end,
-      desc = "Toggle Breakpoint",
-    },
-    {
-      "<leader>dc",
-      function()
-        require("dap").continue()
-      end,
-      desc = "Run/Continue",
-    },
-    {
-      "<leader>da",
-      function()
-        require("dap").continue({ before = get_args })
-      end,
-      desc = "Run with Args",
-    },
-    {
-      "<leader>dC",
-      function()
-        require("dap").run_to_cursor()
-      end,
-      desc = "Run to Cursor",
-    },
-    {
-      "<leader>dg",
-      function()
-        require("dap").goto_()
-      end,
-      desc = "Go to Line (No Execute)",
-    },
-    {
-      "<leader>di",
-      function()
-        require("dap").step_into()
-      end,
-      desc = "Step Into",
-    },
-    {
-      "<leader>dj",
-      function()
-        require("dap").down()
-      end,
-      desc = "Down",
-    },
-    {
-      "<leader>dk",
-      function()
-        require("dap").up()
-      end,
-      desc = "Up",
-    },
-    {
-      "<leader>dl",
-      function()
-        require("dap").run_last()
-      end,
-      desc = "Run Last",
-    },
-    {
-      "<leader>do",
-      function()
-        require("dap").step_out()
-      end,
-      desc = "Step Out",
-    },
-    {
-      "<leader>dO",
-      function()
-        require("dap").step_over()
-      end,
-      desc = "Step Over",
-    },
-    {
-      "<leader>dP",
-      function()
-        require("dap").pause()
-      end,
-      desc = "Pause",
-    },
-    {
-      "<leader>dr",
-      function()
-        require("dap").repl.toggle()
-      end,
-      desc = "Toggle REPL",
-    },
-    {
-      "<leader>ds",
-      function()
-        require("dap").session()
-      end,
-      desc = "Session",
-    },
-    {
-      "<leader>dt",
-      function()
-        require("dap").terminate()
-      end,
-      desc = "Terminate",
-    },
-    {
-      "<leader>dw",
-      function()
-        require("dap.ui.widgets").hover()
-      end,
-      desc = "Widgets",
-    },
-  },
+      executable = {
+        command = "codelldb",
+        args = { "--port", "${port}" },
+      },
+    }
 
-  config = function()
-    if LazyVim.has("mason-nvim-dap.nvim") then
-      require("mason-nvim-dap").setup(LazyVim.opts("mason-nvim-dap.nvim"))
+    local cpp_configs = {
+      {
+        name = "Launch Executable (CodeLLDB)",
+        type = "codelldb",
+        request = "launch",
+
+        program = function()
+          return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
+        end,
+
+        cwd = "${workspaceFolder}",
+        stopOnEntry = false,
+      },
+
+      {
+        name = "Attach to Process (CodeLLDB)",
+        type = "codelldb",
+        request = "attach",
+
+        pid = require("dap.utils").pick_process,
+        cwd = "${workspaceFolder}",
+      },
+    }
+
+    for _, ft in ipairs({
+      "c",
+      "cpp",
+      "objc",
+      "objcpp",
+    }) do
+      if not dap.configurations[ft] then
+        dap.configurations[ft] = vim.deepcopy(cpp_configs)
+      end
     end
 
-    vim.api.nvim_set_hl(0, "DapStoppedLine", { default = true, link = "Visual" })
+    -- ======================================================================
+    -- Node.js / JavaScript
+    -- ======================================================================
 
-    for name, sign in pairs(LazyVim.config.icons.dap) do
-      sign = type(sign) == "table" and sign or { sign }
-      vim.fn.sign_define(
-        "Dap" .. name,
-        { text = sign[1], texthl = sign[2] or "DiagnosticInfo", linehl = sign[3], numhl = sign[3] }
-      )
+    dap.adapters["pwa-node"] = {
+      type = "server",
+      host = "127.0.0.1",
+      port = "${port}",
+
+      executable = {
+        command = "js-debug-adapter",
+        args = { "${port}" },
+      },
+    }
+
+    local node_configs = {
+      {
+        name = "Launch Node.js",
+        type = "pwa-node",
+        request = "launch",
+
+        program = "${file}",
+        cwd = "${workspaceFolder}",
+
+        sourceMaps = true,
+
+        skipFiles = {
+          "<node_internals>/**",
+        },
+      },
+
+      {
+        name = "Attach to Node.js",
+        type = "pwa-node",
+        request = "attach",
+
+        processId = require("dap.utils").pick_process,
+        cwd = "${workspaceFolder}",
+
+        sourceMaps = true,
+
+        skipFiles = {
+          "<node_internals>/**",
+        },
+      },
+    }
+
+    if not dap.configurations.javascript then
+      dap.configurations.javascript = vim.deepcopy(node_configs)
     end
 
-    local vscode = require("dap.ext.vscode")
-    local json = require("plenary.json")
-    vscode.json_decode = function(str)
-      return vim.json.decode(json.json_strip_comments(str))
+    -- TypeScript may require a project-specific runtime
+    -- (tsx, ts-node, compiled JS, etc.).
+    -- Provide Attach as a common starting point.
+
+    if not dap.configurations.typescript then
+      dap.configurations.typescript = {
+        vim.deepcopy(node_configs[2]),
+      }
     end
   end,
 }

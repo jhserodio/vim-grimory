@@ -18,9 +18,13 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
   spec = {
-    -- add LazyVim and import its plugins
+    -- LazyVim core
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
-    -- import/override with your plugins
+
+    -- Debugging infrastructure
+    { import = "lazyvim.plugins.extras.dap.core" },
+
+    -- Grimory custom plugins
     { import = "plugins" },
   },
   defaults = {
