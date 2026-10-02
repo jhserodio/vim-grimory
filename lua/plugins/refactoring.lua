@@ -1,6 +1,12 @@
 return {
   "ThePrimeagen/refactoring.nvim",
+
+  -- Temporarily disabled.
+  -- Current upstream requires Neovim >= 0.12.
+  enabled = false,
+
   event = { "BufReadPre", "BufNewFile" },
+
   dependencies = {
     "nvim-lua/plenary.nvim",
     "nvim-treesitter/nvim-treesitter",

@@ -32,7 +32,7 @@ return {
       "java-debug-adapter",
       "java-test",
       "jdtls",
-      "klint",
+      "ktlint",
 
       -- Terraform
       "tflint",
