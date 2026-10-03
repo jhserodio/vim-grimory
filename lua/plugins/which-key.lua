@@ -6,7 +6,7 @@ return {
       { "<BS>", desc = "Decrement Selection", mode = "x" },
       { "<c-space>", desc = "Increment Selection", mode = { "x", "n" } },
       -- Enhanced group descriptions with icons
-      { "<leader>a", group = "ai", icon = "󰚩" },
+      { "<leader>a", group = "local Qwen agent", icon = "󰚩" },
       { "<leader>b", group = "buffer", icon = "" },
       { "<leader>c", group = "code", icon = "" },
       { "<leader>d", group = "debug", icon = "" },
