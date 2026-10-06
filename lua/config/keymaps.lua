@@ -11,15 +11,15 @@ end
 --
 -- Hermes legacy local-agent API.
 --
--- This remains available as a supervised fallback while OpenCode
--- becomes the primary agentic runtime through CodeCompanion + ACP.
+-- Transitional fallback while OpenCode becomes the primary
+-- agentic runtime.
 --
 local actions = {
   {
     suffix = "h",
     action = "health",
     command = "HermesHealth",
-    description = "Hermes: ACP agent health",
+    description = "Hermes: local ACP agent health",
   },
   {
     suffix = "a",
@@ -63,10 +63,7 @@ end
 --
 -- OpenCode through CodeCompanion + ACP.
 --
--- <leader>ac -> toggle current chat
--- <leader>an -> start a new OpenCode chat
--- <leader>as -> send visual selection to chat
--- <leader>ao -> CodeCompanion actions
+-- Build and Plan are intentionally separate sessions.
 --
 
 vim.keymap.set("n", "<leader>ac", "<cmd>CodeCompanionChat Toggle<cr>", {
@@ -74,9 +71,14 @@ vim.keymap.set("n", "<leader>ac", "<cmd>CodeCompanionChat Toggle<cr>", {
   desc = "Hermes: toggle OpenCode chat",
 })
 
-vim.keymap.set("n", "<leader>an", "<cmd>CodeCompanionChat adapter=opencode<cr>", {
+vim.keymap.set("n", "<leader>an", "<cmd>CodeCompanionChat adapter=opencode_build<cr>", {
   silent = true,
-  desc = "Hermes: new OpenCode chat",
+  desc = "Hermes: new OpenCode Build chat",
+})
+
+vim.keymap.set("n", "<leader>aN", "<cmd>CodeCompanionChat adapter=opencode_plan<cr>", {
+  silent = true,
+  desc = "Hermes: new OpenCode Plan chat",
 })
 
 vim.keymap.set("v", "<leader>as", "<cmd>CodeCompanionChat Add<cr>", {

@@ -17,21 +17,55 @@ return {
     },
 
     opts = {
+      --
+      -- Build is the default OpenCode interaction.
+      --
       interactions = {
         chat = {
-          adapter = "opencode",
+          adapter = "opencode_build",
         },
       },
 
+      --
+      -- Two OpenCode ACP adapters.
+      --
+      -- We deliberately create separate Build and Plan adapters instead
+      -- of switching the mode in an existing chat, because the current
+      -- /acp_session_options picker path triggers:
+      --
+      --   attempt to yield across C-call boundary
+      --
+      -- in our Snacks/CodeCompanion setup.
+      --
       adapters = {
         acp = {
-          extend = {
-            opencode = {
+          opencode_build = function()
+            return require("codecompanion.adapters").extend("opencode", {
+              name = "OpenCode Build",
+
               defaults = {
                 timeout = 60000,
+
+                session_config_options = {
+                  mode = "build",
+                },
               },
-            },
-          },
+            })
+          end,
+
+          opencode_plan = function()
+            return require("codecompanion.adapters").extend("opencode", {
+              name = "OpenCode Plan",
+
+              defaults = {
+                timeout = 60000,
+
+                session_config_options = {
+                  mode = "plan",
+                },
+              },
+            })
+          end,
         },
       },
 
@@ -40,8 +74,7 @@ return {
           enabled = true,
 
           --
-          -- Force even tiny ACP edits out of the chat body
-          -- and into the dedicated diff UI.
+          -- Prefer the dedicated diff UI even for very small changes.
           --
           threshold_for_chat = 0,
 
