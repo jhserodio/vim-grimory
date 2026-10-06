@@ -19,7 +19,7 @@ local actions = {
     suffix = "h",
     action = "health",
     command = "HermesHealth",
-    description = "Hermes: local agent health",
+    description = "Hermes: ACP agent health",
   },
   {
     suffix = "a",
