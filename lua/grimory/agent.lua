@@ -1,4 +1,4 @@
--- Local client for selfhosted-qwen-codeagent.
+-- Local Hermes client for selfhosted-qwen-codeagent.
 -- Neovim >= 0.11, curl.
 -- No cloud API dependency.
 
@@ -6,8 +6,97 @@ local M = {
   pending = nil,
 }
 
+local ACTIVITY_DELAY_MS = 500
+local ACTIVITY_INTERVAL_MS = 400
+
 local function notify(message, level)
-  vim.notify("Qwen Agent: " .. message, level or vim.log.levels.WARN)
+  vim.notify("Hermes: " .. message, level or vim.log.levels.WARN)
+end
+
+local function format_duration(elapsed_ms)
+  if not elapsed_ms then
+    return nil
+  end
+
+  if elapsed_ms < 1000 then
+    return string.format("%dms", elapsed_ms)
+  end
+
+  return string.format("%.1fs", elapsed_ms / 1000)
+end
+
+local function title_with_duration(title, elapsed_ms)
+  local duration = format_duration(elapsed_ms)
+
+  if not duration then
+    return title
+  end
+
+  return title .. " • " .. duration
+end
+
+local function start_activity(message)
+  local timer = vim.uv.new_timer()
+  local started_at = vim.uv.hrtime()
+
+  local stopped = false
+  local shown = false
+  local dots = 1
+
+  local function elapsed_ms()
+    return math.floor(((vim.uv.hrtime() - started_at) / 1e6) + 0.5)
+  end
+
+  timer:start(
+    ACTIVITY_DELAY_MS,
+    ACTIVITY_INTERVAL_MS,
+    vim.schedule_wrap(function()
+      if stopped then
+        return
+      end
+
+      shown = true
+
+      vim.api.nvim_echo({
+        {
+          message .. string.rep(".", dots),
+          "Comment",
+        },
+      }, false, {})
+
+      dots = (dots % 3) + 1
+    end)
+  )
+
+  return function()
+    if stopped then
+      return elapsed_ms()
+    end
+
+    stopped = true
+
+    pcall(function()
+      timer:stop()
+    end)
+
+    pcall(function()
+      if not timer:is_closing() then
+        timer:close()
+      end
+    end)
+
+    local duration = elapsed_ms()
+
+    if shown then
+      vim.schedule(function()
+        vim.api.nvim_echo({
+          { "" },
+        }, false, {})
+      end)
+    end
+
+    return duration
+  end
 end
 
 local function settings()
@@ -65,7 +154,9 @@ local function token()
   return value
 end
 
-local function request(method, route, payload, done)
+local function request(method, route, payload, done, options)
+  options = options or {}
+
   if vim.fn.executable("curl") ~= 1 then
     return notify("curl is required")
   end
@@ -87,8 +178,7 @@ local function request(method, route, payload, done)
   end
 
   --
-  -- Keep bearer token out of process
-  -- arguments visible through `ps`.
+  -- Keep bearer token out of process arguments visible through `ps`.
   --
   local header_path = vim.fn.tempname()
 
@@ -146,10 +236,14 @@ local function request(method, route, payload, done)
 
   local input = payload and vim.json.encode(payload) or nil
 
+  local stop_activity = start_activity(options.activity or "Hermes is thinking")
+
   vim.system(argv, {
     text = true,
     stdin = input,
   }, function(result)
+    local elapsed_ms = stop_activity()
+
     vim.uv.fs_unlink(header_path)
 
     vim.schedule(function()
@@ -175,7 +269,9 @@ local function request(method, route, payload, done)
         return notify("HTTP " .. status .. ": " .. tostring(response.error or "Request failed"), vim.log.levels.ERROR)
       end
 
-      done(response)
+      done(response, {
+        elapsed_ms = elapsed_ms,
+      })
     end)
   end)
 end
@@ -187,7 +283,9 @@ local function close_window(win)
 end
 
 local function show(title, content, filetype, actions)
-  local lines = vim.split(content, "\n", { plain = true })
+  local lines = vim.split(content, "\n", {
+    plain = true,
+  })
 
   local width = math.min(110, math.max(30, vim.o.columns - 6))
 
@@ -198,7 +296,6 @@ local function show(title, content, filetype, actions)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
 
   vim.bo[buf].filetype = filetype or "markdown"
-
   vim.bo[buf].modifiable = false
 
   local window_options = {
@@ -219,7 +316,6 @@ local function show(title, content, filetype, actions)
 
   if actions then
     window_options.footer = " a Apply   r Reject   q Close "
-
     window_options.footer_pos = "center"
   end
 
@@ -230,7 +326,8 @@ local function show(title, content, filetype, actions)
   end, {
     buffer = buf,
     silent = true,
-    desc = "Close Qwen Agent panel",
+    nowait = true,
+    desc = "Close Hermes panel",
   })
 
   if actions then
@@ -241,7 +338,7 @@ local function show(title, content, filetype, actions)
         buffer = buf,
         silent = true,
         nowait = true,
-        desc = "Apply Qwen proposal",
+        desc = "Apply Hermes proposal",
       })
     end
 
@@ -252,7 +349,7 @@ local function show(title, content, filetype, actions)
         buffer = buf,
         silent = true,
         nowait = true,
-        desc = "Reject Qwen proposal",
+        desc = "Reject Hermes proposal",
       })
     end
   end
@@ -266,7 +363,7 @@ local function current_file(config)
   end
 
   if vim.bo.modified then
-    notify("Save the current buffer before using it as agent context")
+    notify("Save the current buffer before using it as Hermes context")
 
     return nil
   end
@@ -323,6 +420,7 @@ end
 local function reject_pending(win)
   if not M.pending then
     close_window(win)
+
     return
   end
 
@@ -380,8 +478,7 @@ local function apply_pending(win)
       confirm = true,
     }, function(response)
       --
-      -- Only clear the proposal after
-      -- successful application.
+      -- Only clear the proposal after successful application.
       --
       M.pending = nil
 
@@ -390,12 +487,16 @@ local function apply_pending(win)
       reload_buffer(target_buf)
 
       notify("Applied changes to " .. tostring(response.file or pending.file), vim.log.levels.INFO)
-    end)
+    end, {
+      activity = "Hermes is applying",
+    })
   end)
 end
 
-local function show_proposal(diff, file)
-  show("Qwen Agent — PROPOSAL • " .. vim.fs.basename(file), diff, "diff", {
+local function show_proposal(diff, file, elapsed_ms)
+  local title = title_with_duration("Hermes — PROPOSAL • " .. vim.fs.basename(file), elapsed_ms)
+
+  show(title, diff, "diff", {
     apply = function(win)
       apply_pending(win)
     end,
@@ -411,12 +512,14 @@ function M.health()
     local capabilities = table.concat(response.capabilities or {}, ", ")
 
     notify("API " .. tostring(response.status) .. " | " .. capabilities, vim.log.levels.INFO)
-  end)
+  end, {
+    activity = "Hermes is checking",
+  })
 end
 
 function M.ask()
   vim.ui.input({
-    prompt = "Ask local Qwen Agent: ",
+    prompt = "Ask Hermes: ",
   }, function(question)
     if not question or question:match("^%s*$") then
       return
@@ -425,7 +528,7 @@ function M.ask()
     request("POST", "/v1/ask", {
       question = question,
       context = "auto",
-    }, function(response)
+    }, function(response, meta)
       local body = {
         response.answer or "(Empty answer)",
       }
@@ -436,7 +539,6 @@ function M.ask()
         for _, source in ipairs(response.sources) do
           table.insert(
             body,
-
             string.format(
               "- `%s:%s-%s`",
               tostring(source.relativePath),
@@ -447,7 +549,7 @@ function M.ask()
         end
       end
 
-      show("Qwen Agent — ASK", table.concat(body, "\n"), "markdown")
+      show(title_with_duration("Hermes — ASK", meta.elapsed_ms), table.concat(body, "\n"), "markdown")
     end)
   end)
 end
@@ -466,7 +568,7 @@ function M.ask_file()
   end
 
   vim.ui.input({
-    prompt = "Ask about " .. relative .. ": ",
+    prompt = "Ask Hermes about " .. relative .. ": ",
   }, function(question)
     if not question or question:match("^%s*$") then
       return
@@ -480,7 +582,7 @@ function M.ask_file()
       },
 
       context = "auto",
-    }, function(response)
+    }, function(response, meta)
       local body = {
         response.answer or "(Empty answer)",
       }
@@ -491,7 +593,6 @@ function M.ask_file()
         for _, source in ipairs(response.sources) do
           table.insert(
             body,
-
             string.format(
               "- `%s:%s-%s`",
               tostring(source.relativePath),
@@ -502,7 +603,11 @@ function M.ask_file()
         end
       end
 
-      show("Qwen Agent — ASK " .. relative, table.concat(body, "\n"), "markdown")
+      show(
+        title_with_duration("Hermes — ASK • " .. vim.fs.basename(relative), meta.elapsed_ms),
+        table.concat(body, "\n"),
+        "markdown"
+      )
     end)
   end)
 end
@@ -521,7 +626,7 @@ function M.propose()
   end
 
   vim.ui.input({
-    prompt = "Propose change to " .. relative .. ": ",
+    prompt = "Edit " .. relative .. " with Hermes: ",
   }, function(instruction)
     if not instruction or instruction:match("^%s*$") then
       return
@@ -530,7 +635,7 @@ function M.propose()
     request("POST", "/v1/edits/propose", {
       file = relative,
       instruction = instruction,
-    }, function(response)
+    }, function(response, meta)
       if not response.id or not response.diff then
         return notify("Incomplete proposal response")
       end
@@ -540,7 +645,7 @@ function M.propose()
         file = response.relativePath or relative,
       }
 
-      show_proposal(response.diff, M.pending.file)
+      show_proposal(response.diff, M.pending.file, meta.elapsed_ms)
     end)
   end)
 end
@@ -558,7 +663,9 @@ function M.preview()
     end
 
     show_proposal(response.diff or "(Empty diff)", pending.file)
-  end)
+  end, {
+    activity = "Hermes is loading",
+  })
 end
 
 function M.apply()
