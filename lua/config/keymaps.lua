@@ -1,6 +1,6 @@
 -- Grimory custom keymaps. LazyVim loads this module on VeryLazy.
 -- Keep local agent mappings in ONE place; plugin specs should not remap them.
--- Minuet supplies inline completion independently of this API client.
+-- Minuet owns inline AI completion independently of this API client.
 
 local function agent(action)
   return function()
@@ -9,11 +9,11 @@ local function agent(action)
 end
 
 local actions = {
-  { suffix = "h", action = "health", command = "GrimoryAgentHealth", description = "Qwen: API health" },
-  { suffix = "a", action = "ask", command = "GrimoryAgentAsk", description = "Qwen: ask project" },
-  { suffix = "f", action = "ask_file", command = "GrimoryAgentFile", description = "Qwen: ask current file" },
-  { suffix = "e", action = "propose", command = "GrimoryAgentEdit", description = "Qwen: propose file edit" },
-  { suffix = "p", action = "preview", command = "GrimoryAgentPreview", description = "Qwen: preview staged diff" },
+  { suffix = "h", action = "health", command = "HermesHealth", description = "Hermes: API health" },
+  { suffix = "a", action = "ask", command = "HermesAsk", description = "Hermes: ask project" },
+  { suffix = "f", action = "ask_file", command = "HermesFile", description = "Hermes: ask current file" },
+  { suffix = "e", action = "propose", command = "HermesEdit", description = "Hermes: propose file edit" },
+  { suffix = "p", action = "preview", command = "HermesPreview", description = "Hermes: preview staged diff" },
 }
 
 for _, entry in ipairs(actions) do
