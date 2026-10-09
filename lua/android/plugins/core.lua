@@ -52,12 +52,6 @@ return {
     },
   },
 
-  -- Keep Tree-sitter and all original language parsers.
-  -- Prefer native clang when parsers need to compile in Termux.
-  {
-    "nvim-treesitter/nvim-treesitter",
-    opts = {
-      install = { compilers = { "clang", "cc" } },
-    },
-  },
+  -- Tree-sitter and parser selections stay in the original plugin specs.
+  -- The compiler preference is configured via CC/CXX in config/options.lua.
 }
