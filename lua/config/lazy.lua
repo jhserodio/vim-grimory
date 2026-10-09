@@ -21,15 +21,8 @@ require("lazy").setup({
     -- LazyVim Core
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
 
-    -- Debugging
-    { import = "lazyvim.plugins.extras.dap.core" },
-
-    -- Web development
-    { import = "lazyvim.plugins.extras.lang.astro" },
-    { import = "lazyvim.plugins.extras.lang.tailwind" },
-
-    -- Grimory custom plugins
-    { import = "plugins" },
+    -- Android profile: do not import desktop plugins or DAP extras.
+    { import = "android.plugins" },
   },
   defaults = {
     -- By default, only LazyVim plugins will be lazy-loaded. Your custom plugins will load during startup.
@@ -42,7 +35,7 @@ require("lazy").setup({
   },
   install = { colorscheme = { "tokyonight", "habamax" } },
   checker = {
-    enabled = true, -- check for plugin updates periodically
+    enabled = false, -- avoid periodic background checks on Android
     notify = false, -- notify on update
   }, -- automatically check for plugin updates
   performance = {
