@@ -3,7 +3,7 @@ vim.opt.termguicolors = true
 vim.opt.mouse = "a"
 
 -- Avoid E8500 ("No clipboard provider") when Termux clipboard isn't available.
--- The Google Play Termux build exposes these commands without termux-api.
+-- Termux builds differ: check both commands before enabling sync.
 vim.opt.clipboard = ""
 if vim.fn.executable("termux-clipboard-set") == 1
   and vim.fn.executable("termux-clipboard-get") == 1 then
