@@ -11,14 +11,8 @@ vim.api.nvim_create_autocmd({ "FocusLost", "BufLeave" }, {
   desc = "Auto-save on focus lost or buffer leave",
 })
 
--- Auto-format on save for configured languages
-vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = { "*.rs", "*.go", "*.hs", "*.java", "*.cpp", "*.c", "*.h", "*.hpp", "*.jl" },
-  callback = function()
-    vim.lsp.buf.format({ async = false })
-  end,
-  desc = "Auto-format on save",
-})
+-- LazyVim and Conform own the only format-on-save path.
+-- Do not run a second LSP format pass here.
 
 -- Highlight yanked text
 vim.api.nvim_create_autocmd("TextYankPost", {
