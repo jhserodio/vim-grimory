@@ -7,18 +7,9 @@ vim.opt.mouse = "a"
 vim.opt.clipboard = ""
 if vim.fn.executable("termux-clipboard-set") == 1
   and vim.fn.executable("termux-clipboard-get") == 1 then
-  vim.g.clipboard = {
-    name = "termux",
-    copy = {
-      ["+"] = "termux-clipboard-set",
-      ["*"] = "termux-clipboard-set",
-    },
-    paste = {
-      ["+"] = "termux-clipboard-get",
-      ["*"] = "termux-clipboard-get",
-    },
-    cache_enabled = 0,
-  }
+  -- Neovim's built-in Termux clipboard provider invokes both commands.
+  -- unnamedplus makes y/p use the Android clipboard in both directions.
+  vim.g.clipboard = "termux"
   vim.opt.clipboard = "unnamedplus"
 end
 
