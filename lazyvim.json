@@ -1,11 +1,8 @@
 {
   "extras": [
-    "lazyvim.plugins.extras.lang.haskell",
     "lazyvim.plugins.extras.lang.json",
     "lazyvim.plugins.extras.lang.markdown",
-    "lazyvim.plugins.extras.lang.toml",
-    "lazyvim.plugins.extras.lang.typescript",
-    "lazyvim.plugins.extras.lang.typescript.vtsls"
+    "lazyvim.plugins.extras.lang.toml"
   ],
   "install_version": 11,
   "news": {
@@ -13,4 +10,3 @@
   },
   "version": 8
 }
-
