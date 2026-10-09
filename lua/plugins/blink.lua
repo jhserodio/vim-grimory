@@ -53,7 +53,7 @@ return {
         auto_show_delay_ms = 200,
       },
       ghost_text = {
-        enabled = false, -- Keep ghost text disabled by default.
+        enabled = false, -- Minuet owns AI ghost text; Blink handles LSP/snippets.
       },
     },
 
@@ -91,17 +91,17 @@ return {
       end
     end
 
-    -- Preserve snippet navigation without AI completion actions
+    -- add ai_accept to <Tab> key
     if not opts.keymap["<Tab>"] then
       if opts.keymap.preset == "super-tab" then -- super-tab
         opts.keymap["<Tab>"] = {
           require("blink.cmp.keymap.presets")["super-tab"]["<Tab>"][1],
-          LazyVim.cmp.map({ "snippet_forward" }),
+          LazyVim.cmp.map({ "snippet_forward", "ai_accept" }),
           "fallback",
         }
       else -- other presets
         opts.keymap["<Tab>"] = {
-          LazyVim.cmp.map({ "snippet_forward" }),
+          LazyVim.cmp.map({ "snippet_forward", "ai_accept" }),
           "fallback",
         }
       end

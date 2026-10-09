@@ -21,16 +21,15 @@ require("lazy").setup({
     -- LazyVim Core
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
 
-    -- Preserve all cross-platform editor features and language tools.
+    -- Debugging
     { import = "lazyvim.plugins.extras.dap.core" },
+
+    -- Web development
     { import = "lazyvim.plugins.extras.lang.astro" },
     { import = "lazyvim.plugins.extras.lang.tailwind" },
 
-    -- The original Vim Grimory plugin specs.
+    -- Grimory custom plugins
     { import = "plugins" },
-
-    -- Termux-specific overrides are applied after the standard specs.
-    { import = "android.plugins" },
   },
   defaults = {
     -- By default, only LazyVim plugins will be lazy-loaded. Your custom plugins will load during startup.
@@ -43,7 +42,7 @@ require("lazy").setup({
   },
   install = { colorscheme = { "tokyonight", "habamax" } },
   checker = {
-    enabled = false, -- avoid periodic background checks on Android
+    enabled = true, -- check for plugin updates periodically
     notify = false, -- notify on update
   }, -- automatically check for plugin updates
   performance = {
