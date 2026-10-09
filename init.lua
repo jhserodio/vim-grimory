@@ -5,4 +5,5 @@ require("config.lazy")
 require("config.clipboard")
 
 -- Workflow automation and productivity
-require("config.workflow")
+-- Desktop workflow hooks are deferred on Android.
+-- require("config.workflow")
