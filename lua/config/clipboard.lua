@@ -33,16 +33,12 @@ vim.api.nvim_create_user_command("CopyLastError", function()
 end, {})
 
 -- Keymaps for easy access
-vim.keymap.set("n", "<leader>cm", "<cmd>CopyMessages<cr>", { desc = "Copy all messages to clipboard" })
+vim.keymap.set("n", "<leader>cM", "<cmd>CopyMessages<cr>", { desc = "Copy all messages to clipboard" })
 vim.keymap.set("n", "<leader>ce", "<cmd>CopyLastError<cr>", { desc = "Copy last error to clipboard" })
 
--- Visual mode: easy copy with Ctrl+C
-vim.keymap.set("v", "<C-c>", '"+y', { desc = "Copy to clipboard" })
-vim.keymap.set("v", "<C-x>", '"+d', { desc = "Cut to clipboard" })
-
--- Normal mode: paste from clipboard
-vim.keymap.set("n", "<C-v>", '"+p', { desc = "Paste from clipboard" })
-vim.keymap.set("i", "<C-v>", '<C-r>+', { desc = "Paste from clipboard" })
+-- Keep Neovim's native Ctrl+C/X/V mappings (including visual block).
+-- With a working Termux clipboard provider, standard y/p and "+y/"+p
+-- already integrate with the Android clipboard.
 
 -- Auto-save errors to a log file
 vim.api.nvim_create_autocmd("VimEnter", {

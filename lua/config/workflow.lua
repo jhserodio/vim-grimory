@@ -151,11 +151,8 @@ end
 vim.keymap.set("n", "<S-l>", M.next_buffer, { desc = "Next Buffer" })
 vim.keymap.set("n", "<S-h>", M.prev_buffer, { desc = "Previous Buffer" })
 
--- Quick window navigation with terminal support
-vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Go to Left Window" })
-vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "Go to Lower Window" })
-vim.keymap.set("n", "<C-k>", "<C-w>k", { desc = "Go to Upper Window" })
-vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "Go to Right Window" })
+-- Ctrl+h/j/k/l belong to vim-tmux-navigator (plugins/tmux.lua).
+-- Do not override that plugin's mappings from this workflow module.
 
 -- Window resize with arrow keys
 vim.keymap.set("n", "<C-Up>", "<cmd>resize +2<cr>", { desc = "Increase Window Height" })
