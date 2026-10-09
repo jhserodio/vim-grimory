@@ -1,8 +1,6 @@
--- bootstrap lazy.nvim, LazyVim and your plugins
+-- bootstrap lazy.nvim, LazyVim and the original Grimory plugins
 require("config.lazy")
 
--- Enhanced clipboard support (copy errors/messages)
+-- Keep clipboard commands and workflow automations.
 require("config.clipboard")
-
--- Workflow automation and productivity
 require("config.workflow")

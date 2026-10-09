@@ -1,5 +1,14 @@
 # Vim Grimory 🌟
 
+> **Android/Termux (`android-version`):** This branch preserves the original
+> Telescope, Tree-sitter, LSP, Rust, Go, C/C++, JavaScript/TypeScript,
+> testing, debugging, tmux, snippets and UI configurations. Android-specific
+> overrides live in `lua/android/plugins/core.lua`. Mason automatic binary
+> installations are disabled; use native Termux tools. AI integrations
+> (OpenCode, CodeCompanion, Minuet, Hermes) are excluded for now.
+> The `master` branch is unchanged.
+
+
 ```
       ██╗   ██╗███╗   ██╗ █████╗ ████████╗ ██████╗ ██████╗ 
       ██║   ██║████╗  ██║██╔══██╗╚══██╔══╝██╔═══██╗██╔══██╗
