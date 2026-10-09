@@ -1,2 +1,2 @@
--- Android baseline: use LazyVim defaults.
--- No AI, clipboard Ctrl-key overrides, or desktop window-manager mappings.
+-- Android/Termux: no Hermes, CodeCompanion or local AI keymaps.
+-- LazyVim supplies the standard editor bindings.

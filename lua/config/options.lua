@@ -1,10 +1,10 @@
--- Termux / Samsung DeX: avoid X11 and Wayland clipboard commands.
+-- Native Termux settings. No Wayland or X11 clipboard helpers.
+vim.opt.clipboard = "unnamedplus"
 vim.opt.termguicolors = true
 vim.opt.mouse = "a"
 
--- Preserve Vim's registers when Android clipboard commands are unavailable.
-vim.opt.clipboard = ""
-
+-- Google Play Termux exposes native clipboard commands on supported builds.
+-- Check them before registering the provider to prevent clipboard errors.
 if vim.fn.executable("termux-clipboard-set") == 1
   and vim.fn.executable("termux-clipboard-get") == 1 then
   vim.g.clipboard = {
@@ -19,5 +19,4 @@ if vim.fn.executable("termux-clipboard-set") == 1
     },
     cache_enabled = 0,
   }
-  vim.opt.clipboard = "unnamedplus"
 end
