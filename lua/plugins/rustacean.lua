@@ -12,6 +12,15 @@
 
 local diagnostics = vim.g.lazyvim_rust_diagnostics or "rust-analyzer"
 
+-- The quantitative roadmap uses a single Cargo manifest for all its exercise files.
+local function quant_roadmap_root(filename)
+  local root = vim.fs.root(filename, ".git")
+  if root and vim.uv.fs_stat(root .. "/development/config/rust/Cargo.toml") then
+    return root
+  end
+  return nil
+end
+
 return {
   "mrcjkb/rustaceanvim",
 
@@ -22,6 +31,21 @@ return {
 
   opts = {
     server = {
+      -- The shared Cargo manifest is not an ancestor of each exercise's main.rs.
+      root_dir = function(filename, default)
+        return quant_roadmap_root(filename) or default(filename)
+      end,
+
+      settings = function(root, default_settings)
+        local settings = vim.deepcopy(default_settings or {})
+        if root and vim.uv.fs_stat(root .. "/development/config/rust/Cargo.toml") then
+          settings["rust-analyzer"] = settings["rust-analyzer"] or {}
+          settings["rust-analyzer"].linkedProjects = {
+            root .. "/development/config/rust/Cargo.toml",
+          }
+        end
+        return settings
+      end,
 
       -- ====================================================================
       -- Rust keymaps

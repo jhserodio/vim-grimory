@@ -13,7 +13,9 @@ vim.api.nvim_create_autocmd({ "FocusLost", "BufLeave" }, {
 
 -- Auto-format on save for configured languages
 vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = { "*.rs", "*.go", "*.hs", "*.java", "*.cpp", "*.c", "*.h", "*.hpp", "*.jl" },
+  -- Conform/LazyVim already formats Rust, Go, and C/C++ on save.
+  -- Preserve LSP formatting for languages without those Conform mappings.
+  pattern = { "*.hs", "*.java", "*.jl" },
   callback = function()
     vim.lsp.buf.format({ async = false })
   end,

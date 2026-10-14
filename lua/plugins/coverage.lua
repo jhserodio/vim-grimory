@@ -5,6 +5,7 @@ return {
   cmd = { 
     "Coverage", 
     "CoverageLoad", 
+    "CoverageLoadLcov",
     "CoverageShow", 
     "CoverageHide", 
     "CoverageToggle", 

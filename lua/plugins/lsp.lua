@@ -72,7 +72,6 @@ return {
 
       -- TypeScript: use VTSLS
       tsserver = { enabled = false },
-      nvim,
       ts_ls = { enabled = false },
       tsc = { enabled = false },
 

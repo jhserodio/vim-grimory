@@ -24,6 +24,9 @@ require("lazy").setup({
     -- Debugging
     { import = "lazyvim.plugins.extras.dap.core" },
 
+    -- Activate the optional Neotest configuration in plugins/neotest.lua.
+    { import = "lazyvim.plugins.extras.test.core" },
+
     -- Web development
     { import = "lazyvim.plugins.extras.lang.astro" },
     { import = "lazyvim.plugins.extras.lang.tailwind" },
