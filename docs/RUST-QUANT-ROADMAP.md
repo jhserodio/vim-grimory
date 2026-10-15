@@ -10,6 +10,11 @@ are **not individual Cargo packages**. Their source files live under
 and configures Rust Analyzer with `linkedProjects`. Other Rust projects
 continue using rustaceanvim's ordinary root discovery.
 
+The global `vim.g.rustaceanvim` configuration must be initialized in
+lazy.nvim's `init` callback, **before** its Rust filetype plugin starts.
+Putting it only in `config` could leave Rust Analyzer without the intended
+project root and linked manifest when the first Rust file is opened.
+
 ## Validate on the workstation
 
 Run from the **quant-dev-roadmap** repository:
@@ -26,8 +31,13 @@ cargo test --manifest-path config/rust/Cargo.toml P0_1_1_euclidean_algorithm
 ```
 
 If Rust Analyzer still reports `the option 'Z' is only accepted on the
-nightly compiler`, this is a **compiler/toolchain configuration issue**,
-not evidence that the workspace discovery change failed. Inspect:
+nightly compiler`, first verify it is no longer checking a standalone
+`main.rs` or `main_test.rs` package. In the reported error, Cargo passed
+`-Z crate-attr=feature(frontmatter)` and
+`-Z crate-attr=allow(unused_features)` while compiling `main_test.rs`
+as a standalone script with the stable compiler. That does **not** by
+itself imply user-defined `RUSTFLAGS`. If the error persists after the
+workspace is correctly linked, inspect:
 
 ```sh
 env | grep -E '^(RUSTFLAGS|CARGO_ENCODED_RUSTFLAGS|RUSTUP_TOOLCHAIN|CARGO_TARGET_DIR)='
@@ -55,6 +65,13 @@ nightly or delete the shared Cargo cache just to silence a `-Z` error.
 4. Use `:RustAnalyzer restart` if you had an earlier standalone LSP session.
 5. Save a Rust file once; it should use Conform's rustfmt mapping, not a
    second independent `vim.lsp.buf.format()` autocmd.
+6. Open an exercise's `main_test.rs`; run `:LspInfo` and `:LazyRoot`.
+   The workspace/project root should remain at `quant-dev-roadmap`.
+7. Toggle Snacks explorer with `<leader>e` or `<leader>fe`. The entire
+   Git repository should remain visible even after navigating between
+   Rust implementation/test files. These root-dir shortcuts do not call
+   `:cd` or alter Neovim's working directory. Outside Git they fall back
+   to normal LazyVim project-root detection.
 
 ## Tests and coverage: known limitations
 
