@@ -2,6 +2,22 @@ return {
   "folke/snacks.nvim",
   priority = 1000,
   lazy = false,
+  keys = {
+    {
+      "<leader>fe",
+      function()
+        Snacks.explorer({ cwd = vim.fs.root(0, ".git") or LazyVim.root() })
+      end,
+      desc = "Explorer (Git root)",
+    },
+    {
+      "<leader>e",
+      function()
+        Snacks.explorer({ cwd = vim.fs.root(0, ".git") or LazyVim.root() })
+      end,
+      desc = "Explorer (Git root)",
+    },
+  },
   opts = {
     -- Desabilitar bigfile para evitar conflitos
     bigfile = { enabled = false },
