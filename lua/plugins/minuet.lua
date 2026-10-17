@@ -1,99 +1,67 @@
--- ============================================================================
--- Vim Grimory - Local AI Suggestions
---
--- Provider: Ollama (Docker)
--- Model: Qwen2.5-Coder 1.5B Base
--- Frontend: Virtual Text (Ghost Text)
---
--- Blink.cmp remains responsible for conventional LSP autocomplete.
--- ============================================================================
+-- Local AI completion (explicitly on demand).
+-- Qwen3.8 is a chat model, so use the chat completions endpoint rather
+-- than the FIM endpoint intended for Qwen2.5-Coder Base.
+-- Set GRIMORY_AI_MODEL to override the Ollama tag for local experiments.
+
+local model = vim.env.GRIMORY_AI_MODEL
+if not model or model == "" then
+  model = "qwen3.8:27b"
+end
 
 return {
   "milanglacier/minuet-ai.nvim",
 
-  -- Register :Minuet immediately, rather than waiting for InsertEnter.
-  lazy = false,
+  -- No model requests, key mappings or Minuet setup during startup.
+  lazy = true,
+  cmd = { "Minuet" },
+  keys = {
+    {
+      "<A-]>",
+      function()
+        require("minuet.virtualtext").action.next()
+      end,
+      mode = "i",
+      desc = "AI: request one completion",
+    },
+  },
 
   opts = {
-    -- ================================================================
-    -- Provider
-    -- ================================================================
-
-    provider = "openai_fim_compatible",
-
-    -- One request per completion cycle to reduce local GPU usage.
+    provider = "openai_compatible",
     n_completions = 1,
-
-    -- Measured in characters, not tokens.
-    -- Start small and increase after validating latency.
     context_window = 768,
-
-    -- Request control.
     throttle = 1000,
     debounce = 400,
-    request_timeout = 8,
 
-    -- ================================================================
-    -- Ollama
-    -- ================================================================
+    -- A larger local reasoning model may have a substantial cold-start delay.
+    request_timeout = 120,
 
     provider_options = {
-      openai_fim_compatible = {
-        name = "Grimory Ollama",
-
-        -- Ollama does not require an API key.
-        -- Minuet expects a non-nil value for the Authorization header.
+      openai_compatible = {
+        name = "Grimory Ollama (manual)",
         api_key = function()
           return "ollama"
         end,
-
-        end_point = "http://127.0.0.1:11434/v1/completions",
-
-        -- Dedicated lightweight model for code suggestions.
-        model = "qwen2.5-coder:1.5b-base",
-
+        end_point = "http://127.0.0.1:11434/v1/chat/completions",
+        model = model,
+        stream = false,
         optional = {
           max_tokens = 96,
+          -- Ollama /v1/chat/completions: avoid spending short output budget on reasoning.
+          reasoning_effort = "none",
           temperature = 0.2,
-          top_p = 0.9,
         },
       },
     },
 
-    -- ================================================================
-    -- Virtual Text / Ghost Text
-    -- ================================================================
-
     virtualtext = {
-      auto_trigger_ft = {
-        "rust",
-        "c",
-        "cpp",
-        "lua",
-        "javascript",
-        "javascriptreact",
-        "typescript",
-        "typescriptreact",
-        "astro",
-        "html",
-        "css",
-      },
-
-      -- Avoid competing visually with the Blink.cmp completion menu.
+      -- Critical: no automatic AI completions on InsertEnter or typing.
+      auto_trigger_ft = {},
       show_on_completion_menu = false,
-
       keymap = {
-        -- Accept the entire suggestion.
         accept = "<A-A>",
-
-        -- Accept only the next line.
         accept_line = "<A-a>",
-
-        -- Request / cycle through suggestions.
         next = "<A-]>",
         prev = "<A-[>",
-
-        -- Dismiss the suggestion.
         dismiss = "<A-e>",
       },
     },

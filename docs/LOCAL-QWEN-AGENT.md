@@ -1,50 +1,127 @@
-# Local AI integration (Grimory)
+# Local AI in Vim Grimory (Qwen3.8 / manual by default)
 
-Grimory runs two separate local AI components:
+Grimory's local AI features are **opt-in per action**. Opening Neovim,
+entering insert mode and typing do not start an AI request. Conventional
+Blink.cmp completion (LSP, snippets, paths, buffer) stays automatic.
 
-- **Minuet:** inline FIM suggestions from Ollama (`qwen2.5-coder:1.5b-base`, `127.0.0.1:11434`). Keep `lua/plugins/minuet.lua` unchanged. Blink remains responsible for LSP, path, snippets, and buffer completions, with its own ghost text disabled.
-- **Qwen Code Agent:** project-aware ASK and supervised EDIT through `selfhosted-qwen-codeagent` (`qwen2.5-coder:7b` behind its local API). This integration is implemented by `lua/grimory/agent.lua` and bound centrally in `lua/config/keymaps.lua`. No CopilotChat, Copilot, CodeCompanion, or cloud provider is part of this setup.
+The tracked model tag for OpenCode and manual Minuet is `qwen3.8:27b`
+(Ollama). This is **Qwen3.8 27B**, not `qwen3:8b` or `qwen3.5:9b`.
+Before using AI, check the tag installed on your own server:
 
-## Prerequisites
+```sh
+curl -fsS http://127.0.0.1:11434/api/tags
+# Or inside the selfhosted-qwen-codeagent directory:
+docker compose exec ollama ollama list
+```
 
-Neovim >= 0.11, `curl`, Node.js and the selfhosted agent's Ollama/Qdrant containers. Ensure `~/.config/nvim` resolves to this Grimory checkout, and start Neovim in the workspace served by the agent. Its token is read from `~/.config/qwen-codeagent/token` and is never committed.
+If your local tag is different, edit `opencode.json` (both `model` and
+`provider.ollama.models`), or override Minuet independently with
+`GRIMORY_AI_MODEL=your-tag nvim`. Ollama is expected on
+`http://127.0.0.1:11434` on the host. The 27B model may need RAM
+offloading on a 16 GB GPU; first response latency can be substantial.
 
-From the **selfhosted-qwen-codeagent** repository:
+## 1. Manual inline completion (Minuet)
+
+- `Alt+]` in Insert mode: load Minuet lazily and request a suggestion.
+- `Alt+A`: accept the suggestion; `Alt+a`: accept a line.
+- `Alt+[` / `Alt+]`: navigate/request suggestions.
+- `Alt+e`: dismiss.
+
+Minuet uses `openai_compatible` with Ollama's
+`/v1/chat/completions` for Qwen3.8. Automatic filetype triggers are
+disabled (`auto_trigger_ft = {}`). `Minuet` is command-loaded,
+not loaded during startup.
+
+The terminal may not transmit some Alt combinations; diagnose mappings with
+`:verbose imap <A-]>`. `:Minuet virtualtext enable` **opts in to automatic**
+suggestions for the current buffer; this is not needed for manual completion.
+Use `:Minuet virtualtext disable` to switch it off again.
+
+The Blink/LSP menu does **not** use Minuet as a completion source.
+
+## 2. Manual agent chat (CodeCompanion + OpenCode ACP)
+
+- `<leader>ac`: toggle a CodeCompanion chat.
+- `<leader>an`: new OpenCode Build chat.
+- `<leader>aN`: new OpenCode Plan chat.
+- `<leader>ao`: CodeCompanion actions.
+
+The OpenCode process starts when a chat is opened, not when Neovim starts.
+CodeCompanion's ACP adapters receive `OPENCODE_CONFIG` pointing to Grimory's
+tracked `opencode.json`. This setting is scoped to OpenCode's subprocess;
+it does not override configuration globally. An individual project's
+`opencode.json` may still override the tracked settings (OpenCode precedence).
+
+The tracked configuration uses `ollama/qwen3.8:27b`, `num_ctx=16384`,
+`keep_alive=1m` and human approval for edits and shell commands. Ollama may
+keep weights loaded briefly after the last request, but no requests should be
+sent automatically by the editor.
+
+Verify the OpenCode binary before testing Neovim:
+
+```sh
+command -v opencode
+opencode --version
+curl -fsS http://127.0.0.1:11434/api/tags
+```
+
+If the chat cannot initialize, inspect the CodeCompanion debug/log output
+and confirm that the requested model is listed in Ollama.
+
+## 3. Legacy local Agent Core / Hermes (independent process)
+
+Hermes uses the separate `selfhosted-qwen-codeagent` Node.js API; it is
+not OpenCode/Minuet and does not automatically start with Neovim.
+
+Commands: `:HermesHealth`, `:HermesAsk`, `:HermesFile`,
+`:HermesEdit`, `:HermesPreview`.
+Keys: `<leader>ah`, `<leader>aa`, `<leader>af`,
+`<leader>ae`, `<leader>ap`.
+
+Grimory's Hermes client defaults to `http://127.0.0.1:8766` and workspace
+`~/dev/vim-grimory`. It **rejects** requests when Neovim's current
+directory differs from the configured workspace. The server and client
+must use matching repository paths. To serve another checkout, start the
+agent from the `selfhosted-qwen-codeagent` repository:
 
 ```sh
 npm run infra:up
-npm run agent:ingest -- --workspace "$HOME/dev/vim-grimory" --repository vim-grimory --extensions .lua,.md,.json,.toml,.yml,.yaml
-npm run agent:up -- --workspace "$HOME/dev/vim-grimory" --repository vim-grimory --port 8766
+AGENT_MODEL=qwen3.8:27b npm run agent:up -- \
+  --workspace "$HOME/dev/quant-dev-roadmap" \
+  --repository quant-dev-roadmap \
+  --port 8766
 ```
 
-Leave `agent:up` running in its terminal. The default Grimory client uses `http://127.0.0.1:8766`, while Minuet uses Ollama directly on port 11434. Start `nvim .` from the Grimory root; the v1 client intentionally checks the configured workspace. If needed, configure `vim.g.qwen_agent_url` and `vim.g.qwen_agent_workspace` before using the client.
+From Neovim opened at that same project root, run:
 
-## Keymaps and corresponding Ex commands
+```vim
+:lua vim.g.qwen_agent_workspace = vim.fn.getcwd()
+:HermesHealth
+```
 
-| Normal mode | Command | Operation |
-| --- | --- | --- |
-| `<leader>ah` | `:GrimoryAgentHealth` | Check local API health |
-| `<leader>aa` | `:GrimoryAgentAsk` | ASK about the indexed workspace |
-| `<leader>af` | `:GrimoryAgentFile` | ASK about the **saved** current file with additional context |
-| `<leader>ae` | `:GrimoryAgentEdit` | Stage an EDIT proposal for the **saved** current file |
-| `<leader>ap` | `:GrimoryAgentPreview` | Show the last pending proposal diff (or prompt for UUID) |
+The legacy Agent Core has its own model configuration (`AGENT_MODEL`
+via the agent repository's `.env` or the process environment); editing
+Grimory's `opencode.json` does not change this separate server.
+For a health check from the agent repository, use:
 
-The API **never applies the patch**. Run the agent's separate, interactive CLI APPLY command and type the exact `APPLY <id>` approval after inspecting the diff. A proposed edit does not alter the buffer or file. REVIEW exists in the underlying HTTP API but has no Vim mapping yet.
+```sh
+npm run agent:health -- --port 8766
+```
 
-Minuet accepts a complete suggestion with `<A-A>` and has its own keymaps in `lua/plugins/minuet.lua`. Qwen Agent actions use the `<leader>a` group and do not consume insert-mode completion mappings.
+This API requires a local token at
+`~/.config/qwen-codeagent/token`, created by the agent launcher.
+File ASK/EDIT requires saved buffers and matching workspaces.
 
-## First-run verification
+## Troubleshooting checklist
 
-1. Restart Neovim, run `:Lazy sync` (and `:Lazy clean` to remove unreferenced historical plugin installations if desired), then reopen `nvim .`.
-2. Run `:verbose nmap <leader>ae`: it must identify **Qwen: propose file edit**, not `CopilotChatExplain` or a CodeCompanion mapping.
-3. Run `:GrimoryAgentHealth`, then `:GrimoryAgentAsk`.
-4. Save a disposable `.lua` file, run `:GrimoryAgentEdit`, review the diff and verify that the source file is untouched.
+1. `docker compose ps` in the agent repository: Ollama is up.
+2. `curl http://127.0.0.1:11434/api/tags`: expected model tag exists.
+3. `command -v opencode`: OpenCode is installed on the Neovim host.
+4. `:Lazy`: Minuet and CodeCompanion should not be active on startup.
+5. Insert `Alt+]`: **manual** Minuet request; no requests while typing.
+6. `<leader>an`: OpenCode Build chat; observe startup and any errors.
+7. `:HermesHealth`: checks the **independent** Node Agent Core, not Ollama.
+8. `:verbose nmap <leader>an` and `:verbose imap <A-]>`: check keymaps.
 
-If the model mentions a source that is absent from the API response's `sources`, treat that claim as **unverified**: automatic retrieval still has known limitations on exact symbol discovery.
-
-## Troubleshooting
-
-- `Model not found: gpt-5-mini`, in a buffer titled **Copilot**: old CopilotChat config or mappings are still loaded. Restart Neovim after applying the removal patch. Search remaining files with `rg -n 'CopilotChat|CodeCompanion|blink-cmp-copilot' lua/`.
-- `API` connection refused: start the `8766` agent instance and run `npm run agent:health -- --port 8766` from the agent repository.
-- Workspace mismatch: start Neovim from the workspace served by the agent; the v1 client enforces this boundary.
-- An edited buffer is unsaved: save it before ASK FILE / EDIT, because the server operates on actual workspace files, not unsaved Neovim state.
+Do not remove Blink, Treesitter, Neovim LSP, or Rustaceanvim to fix an
+AI connection issue. Those plugins are independent.

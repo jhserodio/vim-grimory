@@ -1,41 +1,32 @@
 {
   "$schema": "https://opencode.ai/config.json",
-
-  "model": "ollama/qwen3.5:9b",
-
+  "model": "ollama/qwen3.8:27b",
   "provider": {
     "ollama": {
       "npm": "ollama-ai-provider-v2@3",
       "name": "Ollama (Hermes local)",
-
       "options": {
         "baseURL": "http://127.0.0.1:11434/api"
       },
-
       "models": {
-        "qwen3.5:9b": {
-          "name": "Qwen 3.5 9B",
-
+        "qwen3.8:27b": {
+          "name": "Qwen3.8 27B",
           "limit": {
-            "context": 65536,
-            "output": 8192
+            "context": 16384,
+            "output": 4096
           },
-
           "options": {
             "options": {
-              "num_ctx": 65536,
-              "keep_alive": "10m"
+              "num_ctx": 16384,
+              "keep_alive": "1m"
             },
-
             "think": false
           },
-
           "tool_call": true
         }
       }
     }
   },
-
   "permission": {
     "edit": "ask",
     "bash": "ask",
