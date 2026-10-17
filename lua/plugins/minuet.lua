@@ -46,6 +46,8 @@ return {
         stream = false,
         optional = {
           max_tokens = 96,
+          -- Ollama /v1/chat/completions: avoid spending short output budget on reasoning.
+          reasoning_effort = "none",
           temperature = 0.2,
         },
       },
